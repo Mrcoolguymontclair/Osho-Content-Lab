@@ -1,0 +1,13 @@
+venv/
+.pythonlibs/
+__pycache__/
+.streamlit/
+outputs/
+credentials/
+*.mp4
+*.mp3
+*.pickle
+*.json
+.replit
+replit.nix
+secrets.toml
