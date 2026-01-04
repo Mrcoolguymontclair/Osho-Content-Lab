@@ -11,3 +11,19 @@ credentials/
 .replit
 replit.nix
 secrets.toml
+
+# Database files
+*.db
+*.db-journal
+
+# Daemon runtime files
+daemon.pid
+daemon_stdout.log
+daemon_stderr.log
+scheduler.log
+
+# Cache directories
+cache/
+
+# Test files (optional - uncomment if you don't want to commit)
+# test_*.py
