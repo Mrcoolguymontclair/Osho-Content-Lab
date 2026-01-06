@@ -194,7 +194,7 @@ def get_active_channels() -> List[Dict]:
 
 def update_channel(channel_id: int, **kwargs) -> bool:
     """Update channel fields"""
-    allowed_fields = ['name', 'theme', 'tone', 'style', 'other_info', 'post_interval_minutes', 'music_volume', 'is_active', 'token_file', 'last_post_at', 'next_post_at']
+    allowed_fields = ['name', 'theme', 'tone', 'style', 'other_info', 'post_interval_minutes', 'music_volume', 'is_active', 'token_file', 'last_post_at', 'next_post_at', 'video_type']
 
     updates = []
     values = []

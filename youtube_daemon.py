@@ -28,8 +28,9 @@ from video_engine import (
     generate_video_script, assemble_viral_video,
     cleanup_video_files, check_disk_space
 )
+from video_engine_ranking import generate_ranking_video
 from auth_manager import upload_to_youtube, generate_youtube_metadata, is_channel_authenticated
-from learning_loop import analytics_worker_24h
+from autonomous_learner import start_autonomous_learning
 
 # ==============================================================================
 # Global State
@@ -141,37 +142,56 @@ def generate_next_video(channel: Dict) -> Optional[int]:
             scheduled_post_time=next_post_time
         )
 
-        # Step 1: Generate script
-        add_log(channel_id, "info", "generation", "Step 1: Generating script...")
+        # Check video type and use appropriate generation engine
+        video_type = channel.get('video_type', 'standard')
 
-        script, error = generate_video_script(channel)
+        if video_type == 'ranking':
+            # Use ranking video generator (all-in-one function)
+            add_log(channel_id, "info", "generation", "🎬 Starting RANKING video generation...")
 
-        if not script:
-            update_video(video_id, status="failed", error_message=f"Script generation failed: {error}")
-            paused = handle_error(channel_id, "script_generation", error)
-            if paused:
-                return None
+            video_path, error = generate_ranking_video(channel)
 
-            # Retry with simpler prompt
-            add_log(channel_id, "warning", "generation", "Retrying with simpler theme...")
-            simple_channel = channel.copy()
-            simple_channel['theme'] = channel['theme'].split()[0]  # Use first word only
+            if not video_path:
+                update_video(video_id, status="failed", error_message=f"Ranking video failed: {error}")
+                paused = handle_error(channel_id, "ranking_generation", error)
+                return None if paused else video_id
 
-            script, error = generate_video_script(simple_channel)
+            # Extract title from video filename or set default
+            title = "Ranking Video"
+            update_video(video_id, title=title, video_path=video_path, status="ready")
+
+        else:
+            # Standard video generation (original logic)
+            add_log(channel_id, "info", "generation", "Step 1: Generating script...")
+
+            script, error = generate_video_script(channel)
 
             if not script:
-                return None
+                update_video(video_id, status="failed", error_message=f"Script generation failed: {error}")
+                paused = handle_error(channel_id, "script_generation", error)
+                if paused:
+                    return None
 
-        # Update video with script info
-        update_video(video_id, title=script['title'], topic=script.get('topic', ''))
+                # Retry with simpler prompt
+                add_log(channel_id, "warning", "generation", "Retrying with simpler theme...")
+                simple_channel = channel.copy()
+                simple_channel['theme'] = channel['theme'].split()[0]  # Use first word only
 
-        # Step 2: Assemble video
-        add_log(channel_id, "info", "generation", f"Step 2: Assembling '{script['title']}'...")
+                script, error = generate_video_script(simple_channel)
 
-        output_dir = os.path.join("outputs", f"channel_{channel_name}")
-        os.makedirs(output_dir, exist_ok=True)
+                if not script:
+                    return None
 
-        video_path, error = assemble_viral_video(script, channel, output_dir)
+            # Update video with script info
+            update_video(video_id, title=script['title'], topic=script.get('topic', ''))
+
+            # Step 2: Assemble video
+            add_log(channel_id, "info", "generation", f"Step 2: Assembling '{script['title']}'...")
+
+            output_dir = os.path.join("outputs", f"channel_{channel_name}")
+            os.makedirs(output_dir, exist_ok=True)
+
+            video_path, error = assemble_viral_video(script, channel, output_dir)
 
         if not video_path:
             update_video(video_id, status="failed", error_message=f"Assembly failed: {error}")
@@ -431,15 +451,13 @@ def start_daemon():
     for channel in channels:
         start_channel_worker(channel['id'])
 
-    # Start analytics worker (runs every 24 hours)
-    print("\n🧠 Starting AI Analytics worker...")
-    analytics_thread = threading.Thread(
-        target=analytics_worker_24h,
-        args=(lambda: daemon_running,),
-        daemon=True
-    )
-    analytics_thread.start()
-    print("✅ Analytics worker started (runs every 24 hours)\n")
+    # Start autonomous learning system (runs every 6 hours)
+    print("\n🧠 Starting Autonomous AI Learning System...")
+    print("   → Analyzes video performance automatically")
+    print("   → Improves future videos without user intervention")
+    print("   → Runs every 6 hours in background")
+    start_autonomous_learning()
+    print("✅ Autonomous learning active\n")
 
     # Monitor loop
     while daemon_running:

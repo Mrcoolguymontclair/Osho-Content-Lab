@@ -15,8 +15,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-# YouTube API scopes
-SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
+# YouTube API scopes - includes upload and read access
+SCOPES = ['https://www.googleapis.com/auth/youtube']
 
 # Tokens directory
 TOKENS_DIR = "tokens"
@@ -294,12 +294,24 @@ def get_youtube_channel_info(channel_name: str) -> Optional[Dict]:
 
         if response.get('items'):
             channel = response['items'][0]
+            profile_pic = None
+            if 'thumbnails' in channel['snippet']:
+                # Try to get the best quality thumbnail available
+                thumbnails = channel['snippet']['thumbnails']
+                if 'medium' in thumbnails:
+                    profile_pic = thumbnails['medium']['url']
+                elif 'default' in thumbnails:
+                    profile_pic = thumbnails['default']['url']
+                elif 'high' in thumbnails:
+                    profile_pic = thumbnails['high']['url']
+
             return {
                 'title': channel['snippet']['title'],
                 'description': channel['snippet']['description'],
                 'subscribers': channel['statistics'].get('subscriberCount', '0'),
                 'views': channel['statistics'].get('viewCount', '0'),
-                'videos': channel['statistics'].get('videoCount', '0')
+                'videos': channel['statistics'].get('videoCount', '0'),
+                'profile_picture': profile_pic
             }
 
     except Exception as e:

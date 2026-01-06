@@ -45,7 +45,24 @@ def find_ffmpeg() -> str:
 
     return 'ffmpeg'  # Last resort
 
+def find_ffprobe() -> str:
+    """Find ffprobe binary (companion to ffmpeg)"""
+    common_paths = [
+        '/opt/homebrew/bin/ffprobe',  # macOS Homebrew (M1/M2)
+        '/usr/local/bin/ffprobe',     # macOS Homebrew (Intel)
+        '/usr/bin/ffprobe',           # Linux
+        'C:\\ffmpeg\\bin\\ffprobe.exe',  # Windows
+        'ffprobe'                     # Fallback to PATH
+    ]
+
+    for path in common_paths:
+        if shutil.which(path) or os.path.exists(path):
+            return path
+
+    return 'ffprobe'  # Last resort
+
 FFMPEG = find_ffmpeg()
+FFPROBE = find_ffprobe()
 
 # ==============================================================================
 # Environment Setup & API Clients
@@ -340,7 +357,7 @@ def download_video_clip(
 
         # Get actual video duration
         probe_result = subprocess.run([
-            'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+            FFPROBE, '-v', 'error', '-show_entries', 'format=duration',
             '-of', 'default=noprint_wrappers=1:nokey=1', temp_path
         ], capture_output=True, text=True, timeout=10)
 
@@ -351,15 +368,20 @@ def download_video_clip(
 
         # If video is shorter than needed, loop it; otherwise trim it
         if actual_duration < duration:
-            # Loop video to reach desired duration
+            # Calculate exact number of loops needed
+            import math
+            loops_needed = math.ceil(duration / actual_duration) - 1  # -1 because first play isn't a loop
+
+            # CRITICAL: Use exact loop count, NOT -1 (infinite)
+            # -stream_loop 2 = play 3 times total (original + 2 loops)
             result = subprocess.run([
-                FFMPEG, '-stream_loop', '-1', '-i', temp_path,
-                '-t', str(duration),
+                FFMPEG, '-stream_loop', str(loops_needed), '-i', temp_path,
+                '-t', str(duration),  # Hard limit to prevent runaway
                 '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-y', output_path
-            ], capture_output=True, timeout=60)
+            ], capture_output=True, timeout=120)  # Increased timeout for looping
         else:
             # Trim to exact duration and ensure vertical format
             result = subprocess.run([
@@ -437,16 +459,112 @@ def download_background_music(
     max_retries: int = 5
 ) -> Tuple[bool, Optional[str]]:
     """
-    Download background music from Pixabay.
+    Select background music from local library based on keywords/tags.
 
-    NOTE: Pixabay free API doesn't support audio/music downloads.
-    Music feature requires paid Pixabay plan. Videos will work without music.
+    Uses music_library.json to match keywords to tagged music files.
+    Falls back to random selection if no good match found.
 
     Returns: (success, error_message)
     """
-    # Pixabay free API doesn't support music - skip gracefully
-    log_to_db(channel_id, "info", "music", "Skipping music (Pixabay free API doesn't support audio)")
-    return False, "Pixabay free API doesn't support audio downloads"
+    import json
+    import shutil
+    import random
+
+    music_dir = "music"
+    library_file = os.path.join(music_dir, "music_library.json")
+
+    # Check if music directory and library exist
+    if not os.path.exists(music_dir):
+        log_to_db(channel_id, "warning", "music", "Music directory not found")
+        return False, "Music directory doesn't exist"
+
+    if not os.path.exists(library_file):
+        log_to_db(channel_id, "warning", "music", "Music library file not found")
+        return False, "music_library.json not found"
+
+    try:
+        # Load music library
+        with open(library_file, 'r') as f:
+            library = json.load(f)
+
+        music_files = library.get('music_files', [])
+
+        if not music_files:
+            log_to_db(channel_id, "warning", "music", "No music files in library")
+            return False, "No music files configured in library"
+
+        # Parse keywords into list
+        keyword_list = [k.strip().lower() for k in keywords.split()]
+
+        # Score each music file based on tag matches
+        scored_files = []
+        for music_file in music_files:
+            filename = music_file.get('filename')
+            tags = [t.lower() for t in music_file.get('tags', [])]
+
+            # Check if file actually exists
+            file_path = os.path.join(music_dir, filename)
+            if not os.path.exists(file_path):
+                continue
+
+            # Calculate match score
+            score = sum(1 for keyword in keyword_list if any(keyword in tag for tag in tags))
+            scored_files.append((score, music_file, file_path))
+
+        if not scored_files:
+            log_to_db(channel_id, "warning", "music", "No valid music files found")
+            return False, "No music files found in music directory"
+
+        # Sort by score (highest first)
+        scored_files.sort(reverse=True, key=lambda x: x[0])
+
+        # Pick the best match (or random from top 3 if multiple have same score)
+        best_score = scored_files[0][0]
+        top_matches = [f for f in scored_files if f[0] == best_score]
+
+        selected = random.choice(top_matches)
+        score, music_info, source_path = selected
+
+        # Extract best snippet using Harmony Snippets API
+        try:
+            from harmony_snippets import extract_music_snippet
+
+            log_to_db(channel_id, "info", "music", f"Extracting best snippet from '{music_info['filename']}'...")
+
+            success, snippet_path, error = extract_music_snippet(
+                source_path,
+                duration=60,  # YouTube Shorts length
+                output_file=output_path,
+                use_harmony=True
+            )
+
+            if success:
+                match_info = f"'{music_info['filename']}' (score: {score}/{len(keyword_list)}, snippet extracted)"
+                log_to_db(channel_id, "info", "music", f"Selected: {match_info}")
+                return True, None
+            else:
+                # Fallback to full file if snippet extraction fails
+                log_to_db(channel_id, "warning", "music", f"Snippet extraction failed, using full file: {error}")
+                shutil.copy2(source_path, output_path)
+
+        except ImportError:
+            # harmony_snippets not available, use full file
+            log_to_db(channel_id, "info", "music", "Harmony Snippets not available, using full file")
+            shutil.copy2(source_path, output_path)
+
+        # Verify file was copied
+        if not os.path.exists(output_path) or os.path.getsize(output_path) < 1000:
+            raise Exception("Failed to copy music file")
+
+        match_info = f"'{music_info['filename']}' (score: {score}/{len(keyword_list)})"
+        log_to_db(channel_id, "info", "music", f"Selected: {match_info}")
+
+        return True, None
+
+    except Exception as e:
+        error_msg = str(e)
+        log_to_db(channel_id, "error", "music", f"Music selection failed: {error_msg}")
+        return False, f"Music selection error: {error_msg}"
 
 
 # Original music download code - disabled (requires paid Pixabay plan)
@@ -567,7 +685,7 @@ def assemble_viral_video(
 
             # Get voiceover duration using ffprobe
             duration_result = subprocess.run([
-                'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                FFPROBE, '-v', 'error', '-show_entries', 'format=duration',
                 '-of', 'default=noprint_wrappers=1:nokey=1', vo_path
             ], capture_output=True, text=True, timeout=10)
 
@@ -763,6 +881,20 @@ def assemble_viral_video(
 
         if 'Audio: aac' not in verify_result.stderr:
             return None, "Audio stream not found in final video!"
+
+        # CRITICAL: Check video duration (YouTube Shorts max: 3 minutes)
+        duration_check = subprocess.run([
+            FFPROBE, '-v', 'error', '-show_entries', 'format=duration',
+            '-of', 'default=noprint_wrappers=1:nokey=1', final_video
+        ], capture_output=True, text=True, timeout=10)
+
+        try:
+            final_duration = float(duration_check.stdout.strip())
+            if final_duration > 175:  # 2min 55sec max (safety margin)
+                return None, f"Video too long! {final_duration:.1f}s (max 175s for YouTube Shorts)"
+            log_to_db(channel_id, "info", "assembly", f"✓ Duration: {final_duration:.1f}s")
+        except:
+            log_to_db(channel_id, "warning", "assembly", "Could not verify duration")
 
         size_mb = os.path.getsize(final_video) / (1024 * 1024)
         log_to_db(channel_id, "info", "assembly", f"✓ Video complete! Size: {size_mb:.1f}MB")

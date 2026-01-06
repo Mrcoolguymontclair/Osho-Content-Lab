@@ -1,0 +1,65 @@
+{
+  "music_files": [
+    {
+      "filename": "Djo - End Of Beginning (Lyrics).mp3",
+      "tags": ["chill", "powerful", "acoustic", "slow", "happy"],
+      "duration": 159,
+      "notes": "impactful interesting sab about chicago and love"
+    },
+    {
+      "filename": "ODESZA - A Moment Apart.mp3",
+      "tags": ["electronic", "uplifting", "energetic", "dramatic", "beautiful"],
+      "duration": 265,
+      "notes": "Epic electronic anthem with emotional build"
+    },
+    {
+      "filename": "Flume - Never Be Like You feat. Kai [Live at St. Jerome's Laneway Festival Melbourne][vNy-CnyEMoA].mp3",
+      "tags": ["electronic", "chill", "modern", "catchy", "upbeat"],
+      "duration": 230,
+      "notes": "Future bass track with vocal hooks"
+    },
+    {
+      "filename": "Illenium - Good Things Fall Apart.mp3",
+      "tags": ["emotional", "powerful", "electronic", "sad", "uplifting"],
+      "duration": 215,
+      "notes": "Melodic dubstep with emotional vocals"
+    },
+    {
+      "filename": "Two Feet - Go F Yourself.mp3",
+      "tags": ["dark", "intense", "electronic", "gritty", "powerful"],
+      "duration": 198,
+      "notes": "Heavy bass with dark atmospheric vibes"
+    },
+    {
+      "filename": "Glass Animals - Heat Waves.mp3",
+      "tags": ["chill", "dreamy", "catchy", "relaxing", "happy"],
+      "duration": 238,
+      "notes": "Dreamy indie pop with viral appeal"
+    },
+    {
+      "filename": "Tame Impala - The Less I Know The Better.mp3",
+      "tags": ["psychedelic", "groovy", "upbeat", "catchy", "energetic"],
+      "duration": 217,
+      "notes": "Psychedelic pop with infectious bassline"
+    },
+    {
+      "filename": "Porter Robinson - Something Comforting.mp3",
+      "tags": ["emotional", "uplifting", "electronic", "beautiful", "hopeful"],
+      "duration": 274,
+      "notes": "Euphoric electronic with emotional depth"
+    },
+    {
+      "filename": "Madeon - All My Friends.mp3",
+      "tags": ["energetic", "uplifting", "electronic", "happy", "powerful"],
+      "duration": 231,
+      "notes": "High-energy electro-pop banger"
+    },
+    {
+      "filename": "Petit Biscuit - Sunset Lover.mp3",
+      "tags": ["chill", "peaceful", "electronic", "relaxing", "dreamy"],
+      "duration": 205,
+      "notes": "Mellow electronic with summer vibes"
+    }
+  ],
+  "instructions": "Add your music files to the music/ folder and update this JSON with their tags. The system will match music to video content based on the AI's musicKeywords and your tags."
+}

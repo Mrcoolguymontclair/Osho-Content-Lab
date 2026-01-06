@@ -193,6 +193,154 @@ def render_log_entry(log: dict):
     st.text(f"{color} [{timestamp}] [{log['category']}] {log['message']}")
 
 # ==============================================================================
+# Tab Renderers (must be defined before channel_page)
+# ==============================================================================
+
+def render_dashboard_tab(channel: dict):
+    """Dashboard tab - Channel overview with profile and recent videos"""
+    st.markdown("### 📊 Channel Dashboard")
+
+    # Channel Info Section
+    col1, col2 = st.columns([1, 3])
+
+    with col1:
+        # Try to fetch channel profile picture from YouTube
+        try:
+            from auth_manager import get_youtube_channel_info
+            if is_channel_authenticated(channel['name']):
+                channel_info = get_youtube_channel_info(channel['name'])
+                if channel_info and channel_info.get('profile_picture'):
+                    st.image(channel_info['profile_picture'], width=150)
+                else:
+                    st.markdown("### 🎬")
+                    st.caption("Re-auth needed")
+            else:
+                st.markdown("### 🎬")
+                st.caption("Not authenticated")
+        except Exception as e:
+            st.markdown("### 🎬")
+            st.caption("Re-auth needed")
+
+    with col2:
+        st.markdown(f"## {channel['name']}")
+        st.markdown(f"**Theme:** {channel['theme']}")
+        st.markdown(f"**Tone:** {channel['tone']} | **Style:** {channel['style']}")
+        if channel['other_info']:
+            st.caption(f"_{channel['other_info']}_")
+
+    st.divider()
+
+    # Quick Stats
+    st.markdown("### 📈 Quick Stats")
+    col1, col2, col3, col4 = st.columns(4)
+
+    stats = get_channel_stats(channel['id'])
+    pending_videos = stats['total_videos'] - stats['posted_videos'] - stats['failed_videos']
+
+    with col1:
+        st.metric("Total Videos", stats['total_videos'])
+    with col2:
+        st.metric("Posted", stats['posted_videos'])
+    with col3:
+        st.metric("Pending", pending_videos)
+    with col4:
+        st.metric("Failed", stats['failed_videos'])
+
+    # Get total views and likes from videos
+    videos_with_stats = get_channel_videos(channel['id'], limit=100)
+    total_views = sum(v.get('views', 0) for v in videos_with_stats)
+    total_likes = sum(v.get('likes', 0) for v in videos_with_stats)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Views", f"{total_views:,}")
+    with col2:
+        st.metric("Total Likes", f"{total_likes:,}")
+    with col3:
+        if stats['posted_videos'] > 0:
+            avg_views = total_views / stats['posted_videos']
+            st.metric("Avg Views/Video", f"{avg_views:,.0f}")
+        else:
+            st.metric("Avg Views/Video", "0")
+
+    st.divider()
+
+    # AI Learning Status
+    st.info("🧠 **Autonomous AI Learning Active** - System continuously analyzes video performance and automatically improves future videos every 6 hours. No manual intervention needed.")
+
+    st.divider()
+
+    # Recent Videos
+    st.markdown("### 🎥 Recent Videos")
+
+    recent_videos = get_channel_videos(channel['id'], limit=10)
+
+    if not recent_videos:
+        st.info("No videos yet. Create your first video to get started!")
+    else:
+        for video in recent_videos:
+            with st.container():
+                col1, col2, col3 = st.columns([3, 1, 1])
+
+                with col1:
+                    if video.get('youtube_url'):
+                        st.markdown(f"**[{video['title']}]({video['youtube_url']})**")
+                    else:
+                        st.markdown(f"**{video['title']}**")
+
+                    if video.get('actual_post_time'):
+                        post_time = datetime.fromisoformat(video['actual_post_time'])
+                        st.caption(f"Posted: {post_time.strftime('%Y-%m-%d %H:%M')}")
+                    elif video.get('scheduled_post_time'):
+                        sched_time = datetime.fromisoformat(video['scheduled_post_time'])
+                        st.caption(f"Scheduled: {sched_time.strftime('%Y-%m-%d %H:%M')}")
+
+                with col2:
+                    views = video.get('views', 0)
+                    likes = video.get('likes', 0)
+                    st.metric("Views", f"{views:,}")
+
+                with col3:
+                    st.metric("Likes", f"{likes:,}")
+
+                # Status badge
+                status = video.get('status', 'unknown')
+                if status == 'posted':
+                    st.success(f"✅ {status.upper()}")
+                elif status == 'pending':
+                    st.info(f"⏳ {status.upper()}")
+                elif status == 'approved':
+                    st.warning(f"👍 {status.upper()}")
+                else:
+                    st.error(f"❌ {status.upper()}")
+
+                st.divider()
+
+    # Channel Activity
+    st.markdown("### 📅 Channel Activity")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if channel['last_post_at']:
+            last_post = datetime.fromisoformat(channel['last_post_at'])
+            st.info(f"**Last Posted:** {last_post.strftime('%Y-%m-%d at %H:%M')}")
+        else:
+            st.info("**Last Posted:** Never")
+
+    with col2:
+        if channel['next_post_at'] and channel['is_active']:
+            next_post = datetime.fromisoformat(channel['next_post_at'])
+            time_until = next_post - datetime.now()
+            if time_until.total_seconds() > 0:
+                hours = int(time_until.total_seconds() / 3600)
+                mins = int((time_until.total_seconds() % 3600) / 60)
+                st.success(f"**Next Post:** In {hours}h {mins}m")
+            else:
+                st.success("**Next Post:** Coming soon...")
+        else:
+            st.warning("**Next Post:** Channel paused")
+
+# ==============================================================================
 # Pages
 # ==============================================================================
 
@@ -260,7 +408,7 @@ def create_channel_form():
         with col1:
             interval = st.number_input("Post Interval (minutes)", min_value=5, value=60)
         with col2:
-            music_vol = st.slider("Music Volume % (Currently Disabled)", 0, 100, 0, disabled=True, help="Music requires paid Pixabay plan. Videos work great without it!")
+            music_vol = st.slider("Music Volume %", 0, 100, 15, help="Background music volume (0 = no music, 100 = full volume)")
 
         submitted = st.form_submit_button("Create Channel")
 
@@ -339,38 +487,38 @@ def channel_page(channel_id: int):
 
     # Manual tab selection using session state
     if 'active_tab' not in st.session_state:
-        st.session_state.active_tab = "Settings"
+        st.session_state.active_tab = "Dashboard"
 
     # Tab buttons
     col1, col2, col3, col4 = st.columns(4)
     with col1:
+        if st.button("📊 Dashboard", use_container_width=True, type="primary" if st.session_state.active_tab == "Dashboard" else "secondary"):
+            st.session_state.active_tab = "Dashboard"
+            st.rerun()
+    with col2:
         if st.button("⚙️ Settings", use_container_width=True, type="primary" if st.session_state.active_tab == "Settings" else "secondary"):
             st.session_state.active_tab = "Settings"
             st.rerun()
-    with col2:
-        if st.button("📊 Status & Logs", use_container_width=True, type="primary" if st.session_state.active_tab == "Status" else "secondary"):
+    with col3:
+        if st.button("📝 Status & Logs", use_container_width=True, type="primary" if st.session_state.active_tab == "Status" else "secondary"):
             st.session_state.active_tab = "Status"
             st.rerun()
-    with col3:
+    with col4:
         if st.button("🎥 Videos", use_container_width=True, type="primary" if st.session_state.active_tab == "Videos" else "secondary"):
             st.session_state.active_tab = "Videos"
-            st.rerun()
-    with col4:
-        if st.button("📈 Analytics", use_container_width=True, type="primary" if st.session_state.active_tab == "Analytics" else "secondary"):
-            st.session_state.active_tab = "Analytics"
             st.rerun()
 
     st.divider()
 
     # Render selected tab
-    if st.session_state.active_tab == "Settings":
+    if st.session_state.active_tab == "Dashboard":
+        render_dashboard_tab(channel)
+    elif st.session_state.active_tab == "Settings":
         render_settings_tab(channel)
     elif st.session_state.active_tab == "Status":
         render_status_tab(channel)
     elif st.session_state.active_tab == "Videos":
         render_videos_tab(channel)
-    elif st.session_state.active_tab == "Analytics":
-        render_analytics_tab(channel)
 
 def render_settings_tab(channel: dict):
     """Channel settings tab"""
@@ -386,7 +534,14 @@ def render_settings_tab(channel: dict):
 
         with col2:
             interval = st.number_input("Post Interval (minutes)", min_value=5, value=channel['post_interval_minutes'])
-            music_vol = st.slider("Music Volume % (Disabled)", 0, 100, 0, disabled=True, help="Music requires paid Pixabay plan")
+            music_vol = st.slider("Music Volume %", 0, 100, channel.get('music_volume', 15), help="Background music volume (0 = no music, 100 = full volume)")
+
+            video_type = st.selectbox(
+                "Video Format",
+                options=["standard", "ranking"],
+                index=0 if channel.get('video_type', 'standard') == 'standard' else 1,
+                help="Standard: Sequential segments | Ranking: Countdown format (5→1) with overlays"
+            )
 
         other_info = st.text_area("Additional Info", value=channel.get('other_info', ''))
 
@@ -400,7 +555,8 @@ def render_settings_tab(channel: dict):
                 style=style,
                 other_info=other_info,
                 post_interval_minutes=interval,
-                music_volume=music_vol
+                music_volume=music_vol,
+                video_type=video_type
             )
             st.success("Settings saved!")
             time.sleep(1)

@@ -1,29 +1,58 @@
-venv/
-.pythonlibs/
-__pycache__/
-.streamlit/
-outputs/
-credentials/
-*.mp4
-*.mp3
-*.pickle
-*.json
-.replit
-replit.nix
-secrets.toml
+# Secrets and API Keys
+.streamlit/secrets.toml
+*.env
+credentials.json
 
-# Database files
-*.db
+# Database (keep schema, ignore data)
+channels.db
 *.db-journal
 
-# Daemon runtime files
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.pythonlibs/
+ENV/
+
+# Video/Audio outputs
+*.mp4
+*.wav
+*.srt
+outputs/
+video_outputs/
+temp_videos/
+
+# Music files (keep structure/config, ignore actual songs)
+music/*.mp3
+music/*.wav
+!music/README.md
+!music/music_library.json
+
+# Daemon/Logs
 daemon.pid
+daemon.log
 daemon_stdout.log
 daemon_stderr.log
 scheduler.log
+nohup.out
+*.log
 
-# Cache directories
+# System
+.DS_Store
+.vscode/
+.replit
+replit.nix
+credentials/
 cache/
 
-# Test files (optional - uncomment if you don't want to commit)
-# test_*.py
+# Temporary files
+temp/
+tmp/
+*.tmp
+*_temp.*
+*_FINAL.*
+
+# Keep important JSON configs
+!music_library.json
+!package.json
