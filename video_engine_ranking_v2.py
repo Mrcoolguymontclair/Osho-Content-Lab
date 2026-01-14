@@ -40,6 +40,9 @@ from music_manager import get_music_for_mood, get_default_music_for_video_type
 # Import dynamic pacing optimizer
 from pacing_optimizer import get_pacing_for_rank
 
+# Import viral topic selector
+from viral_topic_selector import get_viral_topic, is_boring_topic
+
 # Import audio ducking
 from audio_ducking import mix_audio_with_ducking, mix_audio_simple_duck
 
@@ -74,22 +77,21 @@ def generate_ranking_script_v2(
         return None, "Groq API key not configured"
 
     try:
-        log_to_db(channel_id, "info", "script", "Generating V2 ranking script (engaging)...")
+        log_to_db(channel_id, "info", "script", "Generating V2 ranking script (VIRAL TOPICS)...")
 
         # Get recent videos to avoid duplicates
         from channel_manager import get_channel_videos
         recent_videos = get_channel_videos(channel_id, limit=30)
         recent_titles = [v['title'] for v in recent_videos if v.get('title')]
 
-        # Extract topics to avoid
-        avoid_keywords = set()
-        for title in recent_titles:
-            words = title.lower().split()
-            for word in words:
-                if len(word) > 5 and word not in ['ranking', 'ranked', 'worst', 'extreme', 'top']:
-                    avoid_keywords.add(word)
+        # Get VIRAL topic instead of boring theme
+        viral_topic_data = get_viral_topic(recent_titles)
+        actual_theme = viral_topic_data['topic']
 
-        avoid_topics_str = ", ".join(list(avoid_keywords)[:10]) if avoid_keywords else "none"
+        log_to_db(channel_id, "info", "script", f"🔥 VIRAL TOPIC: {actual_theme} (category: {viral_topic_data['category']})")
+
+        # Override boring theme with viral topic
+        theme = actual_theme
 
         prompt = f"""Generate an EXTREMELY ENGAGING YouTube Shorts ranking video.
 
