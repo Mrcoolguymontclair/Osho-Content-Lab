@@ -167,7 +167,7 @@ Make it EXCITING and VARIED! People should WANT to watch this!"""
 
         # Validate structure
         if not script.get('ranked_items') or len(script['ranked_items']) != ranking_count:
-            return None, f"Expected {ranking_count} items, got {len(script.get('ranked_items', []))}"
+            return None, None, f"Expected {ranking_count} items, got {len(script.get('ranked_items', []))}"
 
         # Optimize title for virality
         original_title = script['title']
@@ -572,18 +572,22 @@ def create_engaging_video_clip(
 # MAIN: Generate Complete Ranking Video (V2 - ALL FIXES)
 # ==============================================================================
 
-def generate_ranking_video_v2(
-    theme: str,
-    tone: str = "Exciting",
-    style: str = "Fast-paced",
-    channel_id: int = 0,
-    ranking_count: int = 5
-) -> Tuple[Optional[str], Optional[str]]:
+def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Generate complete ranking video with ALL quality improvements.
 
-    Returns: (video_path, error_message)
+    Args:
+        channel_config: Channel configuration dict with theme, tone, style, etc.
+        use_strategy: If False, ignore AI recommendations (for A/B testing)
+
+    Returns: (video_path, title, error_message)
     """
+    # Extract parameters from channel config
+    theme = channel_config.get('theme', 'interesting facts')
+    tone = channel_config.get('tone', 'Exciting')
+    style = channel_config.get('style', 'Fast-paced')
+    channel_id = channel_config.get('id', 0)
+    ranking_count = channel_config.get('ranking_count', 5)
     output_dir = "output"
     os.makedirs(output_dir, exist_ok=True)
 
@@ -595,10 +599,11 @@ def generate_ranking_video_v2(
         # STEP 1: Generate engaging script
         script, error = generate_ranking_script_v2(theme, tone, style, channel_id, ranking_count)
         if error:
-            return None, f"Script generation failed: {error}"
+            return None, None, f"Script generation failed: {error}"
 
         ranked_items = script['ranked_items']
-        log_to_db(channel_id, "info", "generation", f"Title: {script['title']}")
+        video_title = script['title']
+        log_to_db(channel_id, "info", "generation", f"Title: {video_title}")
 
         # STEP 2: Generate voiceovers
         log_to_db(channel_id, "info", "generation", "Generating voiceovers...")
@@ -620,7 +625,7 @@ def generate_ranking_video_v2(
 
             success, error = generate_voiceover(narration, vo_path, channel_id)
             if not success:
-                return None, f"Voiceover failed for rank {item['rank']}: {error}"
+                return None, None, f"Voiceover failed for rank {item['rank']}: {error}"
 
             voiceover_files.append(vo_path)
 
@@ -644,7 +649,7 @@ def generate_ranking_video_v2(
             )
 
             if not success:
-                return None, f"Clip download failed for rank {item['rank']}: {error}"
+                return None, None, f"Clip download failed for rank {item['rank']}: {error}"
 
             clip_files.append(clip_path)
 
@@ -681,7 +686,7 @@ def generate_ranking_video_v2(
             )
 
             if not success:
-                return None, f"Visual processing failed for rank {item['rank']}: {error}"
+                return None, None, f"Visual processing failed for rank {item['rank']}: {error}"
 
             processed_clips.append(processed_path)
 
@@ -704,7 +709,7 @@ def generate_ranking_video_v2(
         ], capture_output=True, cwd=output_dir, timeout=120)
 
         if result.returncode != 0:
-            return None, f"Concatenation failed: {result.stderr.decode()}"
+            return None, None, f"Concatenation failed: {result.stderr.decode()}"
 
         # STEP 7: Create perfect audio track
         log_to_db(channel_id, "info", "generation", "Creating audio track...")
@@ -719,7 +724,7 @@ def generate_ranking_video_v2(
         )
 
         if not success:
-            return None, f"Audio creation failed: {error}"
+            return None, None, f"Audio creation failed: {error}"
 
         # STEP 8: Final merge with PERFECT sync
         log_to_db(channel_id, "info", "generation", "Final merge...")
@@ -738,11 +743,11 @@ def generate_ranking_video_v2(
         ], capture_output=True, cwd=output_dir, timeout=180)
 
         if result.returncode != 0:
-            return None, f"Final merge failed: {result.stderr.decode()}"
+            return None, None, f"Final merge failed: {result.stderr.decode()}"
 
         # Verify final video
         if not os.path.exists(final_video) or os.path.getsize(final_video) < 500000:
-            return None, "Final video invalid"
+            return None, None, "Final video invalid"
 
         # Check duration
         probe_result = subprocess.run([
@@ -760,8 +765,8 @@ def generate_ranking_video_v2(
         if abs(actual_duration - TOTAL_DURATION) > 1.0:
             log_to_db(channel_id, "warning", "generation", f"Duration off by {abs(actual_duration - TOTAL_DURATION):.2f}s")
 
-        return final_video, None
+        return final_video, video_title, None
 
     except Exception as e:
         log_to_db(channel_id, "error", "generation", f"Video generation failed: {str(e)}")
-        return None, str(e)
+        return None, None, str(e)
