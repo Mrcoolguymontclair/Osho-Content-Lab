@@ -98,6 +98,142 @@ def init_database():
 init_database()
 
 # ==============================================================================
+# Database Migration for A/B Testing & Strategy Tracking
+# ==============================================================================
+
+def migrate_database_for_analytics():
+    """
+    Add columns for AI strategy tracking and A/B testing.
+    Safe to run multiple times (checks if columns exist first).
+    """
+    with db_lock:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Get existing columns
+        cursor.execute("PRAGMA table_info(videos)")
+        existing_columns = [row[1] for row in cursor.fetchall()]
+
+        migrations_applied = []
+
+        # Add strategy_used column
+        if 'strategy_used' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN strategy_used TEXT DEFAULT NULL")
+            migrations_applied.append("strategy_used")
+
+        # Add strategy_confidence column
+        if 'strategy_confidence' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN strategy_confidence REAL DEFAULT 0.0")
+            migrations_applied.append("strategy_confidence")
+
+        # Add ab_test_group column
+        if 'ab_test_group' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN ab_test_group TEXT DEFAULT NULL")
+            migrations_applied.append("ab_test_group")
+
+        # Analytics & tracking fields
+        if 'views' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN views INTEGER DEFAULT 0")
+            migrations_applied.append("views")
+        if 'likes' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN likes INTEGER DEFAULT 0")
+            migrations_applied.append("likes")
+        if 'comments' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN comments INTEGER DEFAULT 0")
+            migrations_applied.append("comments")
+        if 'shares' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN shares INTEGER DEFAULT 0")
+            migrations_applied.append("shares")
+        if 'avg_watch_time' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN avg_watch_time REAL DEFAULT 0")
+            migrations_applied.append("avg_watch_time")
+        if 'ctr' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN ctr REAL DEFAULT 0")
+            migrations_applied.append("ctr")
+        if 'last_stats_update' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN last_stats_update TEXT")
+            migrations_applied.append("last_stats_update")
+
+        # Thumbnail / title A/B tracking
+        if 'title_variant' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN title_variant TEXT DEFAULT NULL")
+            migrations_applied.append("title_variant")
+        if 'thumbnail_variant' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN thumbnail_variant TEXT DEFAULT NULL")
+            migrations_applied.append("thumbnail_variant")
+        if 'thumbnail_results' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN thumbnail_results TEXT DEFAULT NULL")
+            migrations_applied.append("thumbnail_results")
+
+        # Retention & window metrics
+        if 'retention_curve_json' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN retention_curve_json TEXT DEFAULT NULL")
+            migrations_applied.append("retention_curve_json")
+        if 'views_24h' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN views_24h INTEGER DEFAULT 0")
+            migrations_applied.append("views_24h")
+        if 'views_7d' not in existing_columns:
+            cursor.execute("ALTER TABLE videos ADD COLUMN views_7d INTEGER DEFAULT 0")
+            migrations_applied.append("views_7d")
+
+        conn.commit()
+
+        # Check channels table for ranking_count column
+        cursor.execute("PRAGMA table_info(channels)")
+        channel_columns = [row[1] for row in cursor.fetchall()]
+
+        if 'ranking_count' not in channel_columns:
+            cursor.execute("ALTER TABLE channels ADD COLUMN ranking_count INTEGER DEFAULT 5")
+            migrations_applied.append("ranking_count")
+            conn.commit()
+
+        # Add video_type column to channels (ranking or standard)
+        if 'video_type' not in channel_columns:
+            cursor.execute("ALTER TABLE channels ADD COLUMN video_type TEXT DEFAULT 'ranking'")
+            migrations_applied.append("video_type")
+            conn.commit()
+
+        # Create trends table for Google Trends integration
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS trends (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                topic TEXT NOT NULL,
+                source TEXT,
+                category TEXT,
+                search_volume TEXT,
+                fetched_at TIMESTAMP,
+                analyzed_at TIMESTAMP,
+                analysis_json TEXT,
+                is_approved BOOLEAN DEFAULT 0,
+                video_planned BOOLEAN DEFAULT 0,
+                video_generated BOOLEAN DEFAULT 0,
+                video_posted BOOLEAN DEFAULT 0,
+                video_id INTEGER,
+                video_plan_json TEXT,
+                confidence INTEGER,
+                urgency TEXT,
+                recommended_format TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Create indexes for trends table
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_trends_topic ON trends(topic)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_trends_fetched ON trends(fetched_at)")
+
+        conn.commit()
+        conn.close()
+
+        if migrations_applied:
+            print(f"✅ Database migration complete. Added columns: {', '.join(migrations_applied)}")
+        else:
+            print("✅ Database already up to date (all analytics columns exist)")
+
+        return len(migrations_applied) > 0
+
+# Initialize on import
+
+# ==============================================================================
 # Channel Management
 # ==============================================================================
 
@@ -194,7 +330,7 @@ def get_active_channels() -> List[Dict]:
 
 def update_channel(channel_id: int, **kwargs) -> bool:
     """Update channel fields"""
-    allowed_fields = ['name', 'theme', 'tone', 'style', 'other_info', 'post_interval_minutes', 'music_volume', 'is_active', 'token_file', 'last_post_at', 'next_post_at', 'video_type']
+    allowed_fields = ['name', 'theme', 'tone', 'style', 'other_info', 'post_interval_minutes', 'music_volume', 'is_active', 'token_file', 'last_post_at', 'next_post_at', 'video_type', 'ranking_count']
 
     updates = []
     values = []
@@ -294,7 +430,7 @@ def add_video(
 
 def update_video(video_id: int, **kwargs) -> bool:
     """Update video fields"""
-    allowed_fields = ['title', 'topic', 'video_path', 'youtube_url', 'status', 'actual_post_time', 'error_count', 'error_message']
+    allowed_fields = ['title', 'topic', 'video_path', 'youtube_url', 'status', 'actual_post_time', 'error_count', 'error_message', 'strategy_used', 'strategy_confidence', 'ab_test_group', 'title_variant', 'thumbnail_variant', 'thumbnail_results', 'views', 'likes', 'comments', 'avg_watch_time', 'ctr']
 
     updates = []
     values = []
@@ -402,8 +538,9 @@ def add_log(channel_id: int, level: str, category: str, message: str, details: s
             conn.close()
 
         # Also print to console for debugging
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] [{level.upper()}] [CH{channel_id}] [{category}] {message}")
+        from time_formatter import format_log_timestamp
+        timestamp = format_log_timestamp()
+        print(f"{timestamp} [{level.upper()}] [CH{channel_id}] [{category}] {message}")
 
     except Exception as e:
         print(f"Error logging to database: {e}")

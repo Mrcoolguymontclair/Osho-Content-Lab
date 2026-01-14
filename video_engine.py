@@ -20,7 +20,7 @@ import json
 from datetime import datetime
 from typing import Tuple, Optional, List, Dict
 from gtts import gTTS
-from groq import Groq
+# Groq import moved to groq_manager for automatic failover
 
 # ==============================================================================
 # CRITICAL: FFmpeg Path Finder (from our testing)
@@ -84,8 +84,14 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 PEXELS_API_KEY = os.environ.get('PEXELS_API_KEY', '')
 PIXABAY_API_KEY = os.environ.get('PIXABAY_API_KEY', '')
 
-# Initialize Groq client
-groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+# Initialize Groq client with automatic failover
+try:
+    from groq_manager import get_groq_client
+    groq_client = get_groq_client()
+except Exception as e:
+    print(f"Warning: Could not initialize GroqManager, falling back to single key: {e}")
+    from groq import Groq
+    groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 # ==============================================================================
 # Logging Functions
@@ -193,7 +199,7 @@ Make it VIRAL and ENGAGING! Use shocking facts, numbers, and vivid descriptions.
     try:
         log_dev("AI", f"Generating script (attempt {retry_count + 1}/{max_retries})")
 
-        response = groq_client.chat.completions.create(
+        response = groq_client.chat_completions_create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.9,
@@ -242,33 +248,62 @@ def generate_voiceover(
     max_retries: int = 5
 ) -> Tuple[bool, Optional[str]]:
     """
-    Generate voiceover using gTTS (unlimited, free, proven working).
+    Generate voiceover using Edge TTS (Microsoft Neural Voices - FREE, unlimited, high quality).
+    Falls back to gTTS if Edge TTS fails.
 
-    CRITICAL: gTTS as PRIMARY based on testing - ElevenLabs quota exhausted.
     Returns: (success, error_message)
     """
     try:
-        log_dev("VoiceOver", f"Generating with gTTS (attempt {retry_count + 1})")
+        # PRIMARY: Try Edge TTS first (much higher quality)
+        log_dev("VoiceOver", f"Generating with Edge TTS (attempt {retry_count + 1})")
 
-        # Generate with gTTS
-        tts = gTTS(text=text, lang='en', slow=False)
-        temp_path = output_path.replace('.mp3', '_temp.mp3')
-        tts.save(temp_path)
-
-        # Speed up to 1.1x for better pacing (from our testing)
         try:
-            result = subprocess.run([
-                FFMPEG, '-i', temp_path,
-                '-filter:a', 'atempo=1.1',
-                '-y', output_path
-            ], capture_output=True, check=True, timeout=30)
+            import edge_tts
+            import asyncio
 
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-        except:
-            # If speedup fails, just use original
-            if os.path.exists(temp_path):
-                os.rename(temp_path, output_path)
+            # Voice selection - high quality, natural sounding
+            # en-US-AriaNeural: Female, clear, professional, engaging
+            # en-US-GuyNeural: Male, deep, authoritative
+            voice = "en-US-AriaNeural"
+
+            async def generate_edge_tts():
+                communicate = edge_tts.Communicate(text, voice)
+                await communicate.save(output_path)
+
+            # Run async function
+            asyncio.run(generate_edge_tts())
+
+            # Verify Edge TTS output
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+                log_to_db(channel_id, "info", "voiceover", f"✨ Edge TTS: {os.path.basename(output_path)}")
+                return True, None
+            else:
+                raise Exception("Edge TTS output invalid")
+
+        except Exception as edge_error:
+            # Edge TTS failed, fall back to gTTS
+            log_dev("VoiceOver", f"Edge TTS failed: {edge_error}, falling back to gTTS")
+            log_to_db(channel_id, "warning", "voiceover", "Edge TTS failed, using gTTS fallback")
+
+            # FALLBACK: Use gTTS (reliable but lower quality)
+            tts = gTTS(text=text, lang='en', slow=False)
+            temp_path = output_path.replace('.mp3', '_temp.mp3')
+            tts.save(temp_path)
+
+            # Speed up to 1.1x for better pacing
+            try:
+                result = subprocess.run([
+                    FFMPEG, '-i', temp_path,
+                    '-filter:a', 'atempo=1.1',
+                    '-y', output_path
+                ], capture_output=True, check=True, timeout=30)
+
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+            except:
+                # If speedup fails, just use original
+                if os.path.exists(temp_path):
+                    os.rename(temp_path, output_path)
 
         # Verify file exists and has content
         if not os.path.exists(output_path):
@@ -426,7 +461,7 @@ def generate_alternative_search_query(original_query: str, channel_id: int = 0) 
         return ' '.join(words[:2]) if len(words) > 2 else original_query
 
     try:
-        response = groq_client.chat.completions.create(
+        response = groq_client.chat_completions_create(
             model="llama-3.3-70b-versatile",
             messages=[{
                 "role": "user",
@@ -907,6 +942,36 @@ def assemble_viral_video(
         import traceback
         traceback.print_exc()
         return None, error_msg
+
+
+def create_teaser_clip(final_video_path: str, output_path: str, duration: int = 15) -> Tuple[bool, Optional[str]]:
+    """Create a short teaser clip (vertical) from the final video"""
+    if not os.path.exists(final_video_path):
+        return False, "Final video not found"
+    output_dir = os.path.dirname(final_video_path)
+    try:
+        cmd = [
+            FFMPEG, '-y',
+            '-i', os.path.basename(final_video_path),
+            '-ss', '0',
+            '-t', str(duration),
+            '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '20',
+            '-c:a', 'aac',
+            '-b:a', '128k',
+            os.path.basename(output_path)
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, cwd=output_dir, timeout=90)
+        if result.returncode != 0:
+            return False, f"Teaser creation failed: {result.stderr.decode()}"
+
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
 
 # ==============================================================================
 # Cleanup Functions

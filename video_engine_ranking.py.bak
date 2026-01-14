@@ -35,14 +35,6 @@ from pacing_optimizer import get_pacing_for_rank
 # Import audio ducking
 from audio_ducking import mix_audio_with_ducking, mix_audio_simple_duck
 
-# Import QUALITY IMPROVEMENTS
-from title_thumbnail_optimizer import TitleThumbnailOptimizer
-from video_quality_enhancer import VideoQualityEnhancer
-
-# Initialize optimizers
-title_optimizer = TitleThumbnailOptimizer()
-quality_enhancer = VideoQualityEnhancer()
-
 # ==============================================================================
 # Ranking Script Generation
 # ==============================================================================
@@ -74,21 +66,6 @@ def generate_ranking_script(
 
     try:
         log_to_db(channel_id, "info", "script", "Generating ranking script...")
-
-        # Get recent video titles to avoid duplicates
-        from channel_manager import get_channel_videos
-        recent_videos = get_channel_videos(channel_id, limit=30)
-        recent_titles = [v['title'] for v in recent_videos if v.get('title')]
-
-        # Extract key topics from recent titles to avoid
-        avoid_keywords = set()
-        for title in recent_titles:
-            words = title.lower().split()
-            for word in words:
-                if len(word) > 5 and word not in ['ranking', 'ranked', 'worst', 'extreme']:
-                    avoid_keywords.add(word)
-
-        avoid_topics_str = ", ".join(list(avoid_keywords)[:10]) if avoid_keywords else "none"
 
         # Conditionally fetch AI strategy
         strategy_prompt = ""
@@ -123,11 +100,6 @@ THEME: {theme}
 TONE: {tone}
 STYLE: {style}
 VIDEO FORMAT: {ranking_count} items, 45 seconds total ({seconds_per_rank:.1f}s per item)
-
-🚫 AVOID THESE RECENT TOPICS (we already covered them):
-{avoid_topics_str}
-
-⚠️ IMPORTANT: Choose a COMPLETELY DIFFERENT topic from the ones above. Be creative and unique!
 
 ACCURACY & SAFETY REQUIREMENTS (CRITICAL):
 ⚠️ DO NOT create false, exaggerated, or unverifiable claims
@@ -229,7 +201,7 @@ Output ONLY valid JSON (no markdown, no extra text):
 
 REMEMBER: Generate exactly {ranking_count} items, each with duration {seconds_per_rank:.1f} seconds."""
 
-        response = groq_client.chat_completions_create(
+        response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,  # Reduced from 0.9 for more accurate/consistent output
@@ -280,14 +252,6 @@ REMEMBER: Generate exactly {ranking_count} items, each with duration {seconds_pe
         except ImportError:
             log_to_db(channel_id, "info", "script", "Quality checker not available, skipping quality check")
 
-        # TITLE OPTIMIZATION - Make titles viral!
-        original_title = script['title']
-        optimized_title = title_optimizer.optimize_ranking_title(theme, ranking_count)
-        title_score = title_optimizer.analyze_title_effectiveness(optimized_title)
-
-        script['title'] = optimized_title
-        log_to_db(channel_id, "info", "title_opt", f"Title optimized: {original_title[:50]}... → {optimized_title} (score: {title_score['score']}/100)")
-
         # DUPLICATE CHECK - Prevent repeat videos
         title = script['title']
         is_dup, dup_video = is_duplicate_title(title, channel_id, similarity_threshold=0.85, lookback_days=30)
@@ -297,7 +261,7 @@ REMEMBER: Generate exactly {ranking_count} items, each with duration {seconds_pe
             log_to_db(channel_id, "warning", "duplicate", error_msg)
             return None, error_msg
 
-        log_to_db(channel_id, "info", "script", f"Generated: {script['title']} ({ranking_count} items) [Title Score: {title_score['score']}/100]")
+        log_to_db(channel_id, "info", "script", f"Generated: {script['title']} ({ranking_count} items)")
 
         return script, None
 
@@ -446,38 +410,13 @@ def assemble_ranking_video(
         log_to_db(channel_id, "info", "assembly", f"Using dynamic pacing (dramatic build-up to #1)")
 
         # =============================================================
-        # STEP 1: Generate voiceovers for all items (+ ATTENTION HOOK!)
+        # STEP 1: Generate voiceovers for all items
         # =============================================================
         log_to_db(channel_id, "info", "assembly", "Step 1/7: Generating voiceovers...")
 
         voiceover_files = []
         voiceover_durations = []  # Track actual durations for subtitle timing
 
-        # ATTENTION HOOK - First 3 seconds to grab viewers!
-        hook_script = quality_enhancer.generate_hook_script(theme, "ranking")
-        hook_path = os.path.join(output_dir, f"{base_name}_hook.mp3")
-
-        log_to_db(channel_id, "info", "hook", f"Adding attention hook: '{hook_script}'")
-        success, error = generate_voiceover(hook_script, hook_path, channel_id)
-
-        if success:
-            voiceover_files.append(hook_path)
-            try:
-                probe_result = subprocess.run([
-                    FFPROBE, '-v', 'error',
-                    '-show_entries', 'format=duration',
-                    '-of', 'default=noprint_wrappers=1:nokey=1',
-                    hook_path
-                ], capture_output=True, text=True, timeout=10)
-                hook_duration = float(probe_result.stdout.strip())
-                voiceover_durations.append(hook_duration)
-                log_to_db(channel_id, "info", "hook", f"✅ Hook added ({hook_duration:.1f}s) - 80% retention boost!")
-            except:
-                voiceover_durations.append(3.0)
-        else:
-            log_to_db(channel_id, "warning", "hook", "Hook generation failed, continuing without it")
-
-        # Generate main item voiceovers
         for i, item in enumerate(ranked_items):
             vo_path = os.path.join(output_dir, f"{base_name}_vo_{item['rank']}.mp3")
 
@@ -658,7 +597,7 @@ def assemble_ranking_video(
                 '-maxrate', '5000k',
                 '-bufsize', '8000k',
                 '-r', '30',
-                '-t', str(clip_duration),  # Dynamic clip duration based on rank
+                '-t', str(CLIP_DURATION),  # Exact clip duration for 45s total
                 os.path.basename(processed_path)
             ], capture_output=True, cwd=output_dir, timeout=120)
 
@@ -675,7 +614,7 @@ def assemble_ranking_video(
                         FFMPEG, '-y',
                         '-i', os.path.basename(clip_path),
                         '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
-                        '-t', str(clip_duration),
+                        '-t', str(CLIP_DURATION),
                         os.path.basename(processed_path)
                     ], capture_output=True, cwd=output_dir, timeout=120)
 
@@ -697,7 +636,7 @@ def assemble_ranking_video(
                             FFMPEG, '-y',
                             '-i', os.path.basename(clip_path),
                             '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
-                            '-t', str(clip_duration),
+                            '-t', str(CLIP_DURATION),
                             os.path.basename(processed_path)
                         ], capture_output=True, cwd=output_dir, timeout=120)
 

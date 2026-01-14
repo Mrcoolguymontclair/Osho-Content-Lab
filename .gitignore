@@ -2,10 +2,15 @@
 .streamlit/secrets.toml
 *.env
 credentials.json
+token.json
+tokens/
+tokens_backup/
 
 # Database (keep schema, ignore data)
 channels.db
+*.db
 *.db-journal
+channels.db.backup*
 
 # Python
 __pycache__/
@@ -20,6 +25,7 @@ ENV/
 *.wav
 *.srt
 outputs/
+output/
 video_outputs/
 temp_videos/
 
@@ -31,10 +37,13 @@ music/*.wav
 
 # Daemon/Logs
 daemon.pid
+daemon_keeper.pid
 daemon.log
 daemon_stdout.log
 daemon_stderr.log
 scheduler.log
+scheduler_state.json
+scheduler_log.json
 nohup.out
 *.log
 
@@ -45,6 +54,9 @@ nohup.out
 replit.nix
 credentials/
 cache/
+
+# UI Preferences (user-specific)
+ui_preferences.json
 
 # Temporary files
 temp/

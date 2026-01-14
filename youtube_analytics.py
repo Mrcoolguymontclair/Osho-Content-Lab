@@ -85,9 +85,10 @@ def get_video_stats(video_url: str, channel_name: str) -> Optional[Dict]:
 
         # Try to get analytics data (requires special permissions)
         try:
-            result['avg_watch_time'] = get_average_view_duration(youtube, video_id)
-        except:
-            pass  # Analytics API not available or not authorized
+            result['avg_watch_time'], result['ctr'] = get_average_view_duration_and_ctr(channel_name, video_id)
+        except Exception:
+            # Analytics API not available or not authorized
+            pass
 
         return result
 
@@ -109,6 +110,79 @@ def get_average_view_duration(youtube, video_id: str) -> float:
         return 0.0
     except:
         return 0.0
+
+
+def get_video_analytics(video_id: str, channel_id: int, days_window: int = 7) -> Optional[Dict]:
+    """
+    Fetch comprehensive video analytics from YouTube Analytics API.
+    
+    Args:
+        video_id: YouTube video ID
+        channel_id: DB channel ID
+        days_window: How many days back to look
+    
+    Returns:
+        {
+            'video_id': str,
+            'views': int,
+            'impressions': int,
+            'ctr': float,
+            'avg_view_duration_secs': float,
+            'avg_view_percentage': float,
+            'views_24h': int,
+            'views_7d': int,
+            'retention_curve': List[float],  # [0s, 3s, 15s, 30s, 60s, ...]
+            'fetched_at': str
+        }
+    """
+    try:
+        from channel_manager import get_channel
+        channel = get_channel(channel_id)
+        if not channel:
+            return None
+
+        # Get YouTube service
+        youtube = get_youtube_service(channel['name'])
+        if not youtube:
+            return None
+
+        # Try to fetch via basic video stats API (always available)
+        request = youtube.videos().list(
+            part='statistics,snippet',
+            id=video_id
+        )
+        response = request.execute()
+
+        if not response.get('items'):
+            return None
+
+        video_data = response['items'][0]
+        stats = video_data['statistics']
+        snippet = video_data['snippet']
+
+        # Basic stats always available
+        result = {
+            'video_id': video_id,
+            'views': int(stats.get('viewCount', 0)),
+            'impressions': 0,  # Requires Analytics API
+            'ctr': 0.0,  # Requires Analytics API
+            'avg_view_duration_secs': 0.0,  # Requires Analytics API
+            'avg_view_percentage': 0.0,  # Requires Analytics API
+            'views_24h': 0,  # Would require time-series data
+            'views_7d': int(stats.get('viewCount', 0)),  # Approximation
+            'retention_curve': [],
+            'published_at': snippet.get('publishedAt', ''),
+            'fetched_at': datetime.now().isoformat()
+        }
+
+        # Future enhancement: add youtubeAnalytics API integration here
+        # This would fetch impressions, ctr, avg_view_duration, retention curves
+
+        return result
+
+    except Exception as e:
+        print(f"Error fetching video analytics: {e}")
+        return None
 
 
 def get_channel_videos_stats(channel_name: str, limit: int = 50) -> List[Dict]:
@@ -304,6 +378,20 @@ def upgrade_database_schema():
 
     if 'last_stats_update' not in columns:
         c.execute('ALTER TABLE videos ADD COLUMN last_stats_update TEXT')
+
+    # Additional fields for experiments and A/B tests
+    if 'title_variant' not in columns:
+        c.execute('ALTER TABLE videos ADD COLUMN title_variant TEXT DEFAULT NULL')
+    if 'thumbnail_variant' not in columns:
+        c.execute('ALTER TABLE videos ADD COLUMN thumbnail_variant TEXT DEFAULT NULL')
+    if 'thumbnail_results' not in columns:
+        c.execute('ALTER TABLE videos ADD COLUMN thumbnail_results TEXT DEFAULT NULL')
+    if 'retention_curve_json' not in columns:
+        c.execute('ALTER TABLE videos ADD COLUMN retention_curve_json TEXT DEFAULT NULL')
+    if 'views_24h' not in columns:
+        c.execute('ALTER TABLE videos ADD COLUMN views_24h INTEGER DEFAULT 0')
+    if 'views_7d' not in columns:
+        c.execute('ALTER TABLE videos ADD COLUMN views_7d INTEGER DEFAULT 0')
 
     conn.commit()
     conn.close()
