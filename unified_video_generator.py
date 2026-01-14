@@ -100,8 +100,8 @@ class UnifiedVideoGenerator:
         """Generate ranking video with all improvements."""
         add_log(self.channel_id, "info", "ranking", "🏆 Generating ranking video with enhancements")
 
-        # Import ranking generator
-        from video_engine_ranking import generate_ranking_video
+        # Import ranking generator V2 (with all quality fixes)
+        from video_engine_ranking_v2 import generate_ranking_video_v2 as generate_ranking_video
 
         # Get optimized configuration
         ranking_count = kwargs.get('ranking_count', 10)  # Use 10 for better engagement

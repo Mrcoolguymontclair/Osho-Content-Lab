@@ -31,7 +31,7 @@ from video_engine import (
     generate_video_script, assemble_viral_video,
     cleanup_video_files, check_disk_space, create_teaser_clip
 )
-from video_engine_ranking import generate_ranking_video
+from video_engine_ranking_v2 import generate_ranking_video_v2 as generate_ranking_video
 from auth_manager import upload_to_youtube, generate_youtube_metadata, is_channel_authenticated, start_token_refresh_scheduler, stop_token_refresh_scheduler, get_video_id_from_url, upload_thumbnail
 from thumbnail_generator import generate_thumbnail
 import random
