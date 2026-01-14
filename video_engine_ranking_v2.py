@@ -21,10 +21,15 @@ from datetime import datetime
 
 # Import shared utilities
 from video_engine import (
-    FFMPEG, FFPROBE, groq_client, PEXELS_API_KEY,
+    FFMPEG, FFPROBE, PEXELS_API_KEY,
     log_to_db, log_dev, download_video_clip,
     generate_voiceover, download_background_music
 )
+
+# Get Groq client from manager
+from groq_manager import get_groq_client
+groq_manager = get_groq_client()
+groq_client = groq_manager.client if groq_manager else None
 
 # Import duplicate detector
 from duplicate_detector import is_duplicate_title, is_duplicate_topic
