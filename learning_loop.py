@@ -15,13 +15,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from channel_manager import get_active_channels, get_channel, add_log
 from youtube_analytics import update_all_video_stats
-from ai_analyzer import analyze_channel_trends, generate_content_strategy
+from ai_analyzer import analyze_channel_trends, generate_content_strategy, apply_ai_recommendations
 
 # ==============================================================================
 # Analytics Cycle
 # ==============================================================================
 
-def run_analytics_cycle(channel_id: int) -> bool:
+def run_analytics_cycle(channel_id: int, auto_apply_settings: bool = True) -> bool:
     """
     Run complete analytics and learning cycle for a channel.
 
@@ -29,7 +29,12 @@ def run_analytics_cycle(channel_id: int) -> bool:
     1. Fetch latest stats for all posted videos
     2. Analyze performance patterns with AI
     3. Generate new content strategy
-    4. Log results
+    4. Apply AI recommendations (posting interval, etc.)
+    5. Log results
+
+    Args:
+        channel_id: Channel ID to analyze
+        auto_apply_settings: If True, automatically apply AI recommendations with high confidence
 
     Returns:
         True if successful, False otherwise
@@ -55,12 +60,22 @@ def run_analytics_cycle(channel_id: int) -> bool:
         else:
             add_log(channel_id, "warning", "analytics", "⚠️ Not enough data for trend analysis yet")
 
-        # Step 3: Generate new content strategy
+        # Step 3: Generate new content strategy (includes posting interval optimization)
         strategy = generate_content_strategy(channel_id)
 
         if strategy:
             confidence = strategy.get('confidence_score', 0) * 100
             add_log(channel_id, "info", "analytics", f"✅ Generated new strategy (confidence: {confidence:.0f}%)")
+
+            # Step 4: Apply AI recommendations
+            if auto_apply_settings:
+                applied = apply_ai_recommendations(channel_id, auto_apply=True)
+                if applied:
+                    add_log(channel_id, "info", "analytics", "🤖 AI recommendations auto-applied")
+                else:
+                    add_log(channel_id, "info", "analytics", "📋 AI recommendations logged (not auto-applied)")
+            else:
+                apply_ai_recommendations(channel_id, auto_apply=False)
         else:
             add_log(channel_id, "warning", "analytics", "⚠️ Could not generate strategy")
 
