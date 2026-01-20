@@ -137,7 +137,7 @@ def scan_output_directory(days_old: int = 7) -> Dict:
                     })
 
             except Exception as e:
-                print(f"   ⚠️  Error scanning {filepath}: {e}")
+                print(f"   [WARNING]  Error scanning {filepath}: {e}")
 
     return report
 
@@ -264,7 +264,7 @@ if __name__ == "__main__":
     print("=" * 70)
 
     # Get disk usage
-    print("\n📊 Current Disk Usage:")
+    print("\n[CHART] Current Disk Usage:")
     usage = get_disk_usage_report()
     if usage['exists']:
         print(f"   Total Files: {usage['total_files']:,}")
@@ -273,7 +273,7 @@ if __name__ == "__main__":
         print("   outputs/ directory not found")
 
     # Scan for deletable files
-    print("\n🔍 Scanning for deletable files (7+ days old)...")
+    print("\n Scanning for deletable files (7+ days old)...")
     report = cleanup_old_files(days_old=7, dry_run=True)
 
     print(f"\n   Files Scanned: {report['files_scanned']:,}")
@@ -288,23 +288,23 @@ if __name__ == "__main__":
 
     # Check for confirmation
     if len(sys.argv) > 1 and sys.argv[1] == '--execute':
-        print("\n⚠️  EXECUTING CLEANUP (this will permanently delete files)...")
+        print("\n[WARNING]  EXECUTING CLEANUP (this will permanently delete files)...")
         result = cleanup_old_files(days_old=7, dry_run=False)
 
-        print(f"\n✅ Cleanup Complete!")
+        print(f"\n[OK] Cleanup Complete!")
         print(f"   Files Deleted: {result['files_deleted']:,}")
         print(f"   Space Freed: {result['space_freed_mb']:.2f} MB")
 
         if result['errors']:
-            print(f"\n   ⚠️  {len(result['errors'])} errors occurred")
+            print(f"\n   [WARNING]  {len(result['errors'])} errors occurred")
 
         # Also cleanup database
-        print("\n🗑️  Cleaning up failed video records...")
+        print("\n  Cleaning up failed video records...")
         db_result = cleanup_failed_video_records(days_old=30)
         print(f"   Deleted {db_result['failed_records_deleted']} old failed records")
 
     else:
-        print("\n💡 To execute cleanup, run:")
+        print("\n[IDEA] To execute cleanup, run:")
         print("   python3 file_cleanup.py --execute")
 
     print("\n" + "=" * 70)

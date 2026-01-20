@@ -557,7 +557,7 @@ def log_system_improvements():
     for improvement in improvements:
         tracker.log_improvement_event(**improvement)
 
-    print(f"✅ Logged {len(improvements)} system improvements")
+    print(f"[OK] Logged {len(improvements)} system improvements")
 
 
 if __name__ == "__main__":
@@ -580,7 +580,7 @@ if __name__ == "__main__":
     print(f"  Disk Usage: {report['snapshot']['disk_usage_mb']:.0f} MB")
 
     if report['recommendations']:
-        print(f"\n⚠️  Recommendations ({len(report['recommendations'])}):")
+        print(f"\n[WARNING]  Recommendations ({len(report['recommendations'])}):")
         for rec in report['recommendations']:
             print(f"  [{rec['priority'].upper()}] {rec['issue']}")
             print(f"    → {rec['action']}")

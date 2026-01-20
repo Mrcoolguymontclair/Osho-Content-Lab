@@ -110,13 +110,13 @@ class ABTestingFramework:
             ))
 
             conn.commit()
-            print(f"✅ Created A/B test: {name}")
+            print(f"[OK] Created A/B test: {name}")
             print(f"   Test ID: {test_id}")
             print(f"   Target sample size: {sample_size_target} videos per variant")
             return True
 
         except sqlite3.IntegrityError:
-            print(f"❌ Test {test_id} already exists")
+            print(f"[ERROR] Test {test_id} already exists")
             return False
         finally:
             conn.close()
@@ -173,7 +173,7 @@ class ABTestingFramework:
                 SET status = 'completed', end_date = ?
                 WHERE test_id = ?
             """, (format_time_chicago(now_chicago(), "full"), test_id))
-            print(f"✅ A/B test {test_id} completed (reached target sample size)")
+            print(f"[OK] A/B test {test_id} completed (reached target sample size)")
 
         # Record assignment
         cursor.execute("""
@@ -344,7 +344,7 @@ class ABTestingFramework:
         conn.commit()
         conn.close()
 
-        print(f"✅ Stopped A/B test: {test_id}")
+        print(f"[OK] Stopped A/B test: {test_id}")
 
 
 def create_predefined_tests():
@@ -434,7 +434,7 @@ def create_predefined_tests():
         framework.create_test(**test)
         print()
 
-    print("\n✅ All predefined tests created!")
+    print("\n[OK] All predefined tests created!")
     print("\nTo use in video generation:")
     print("```python")
     print("framework = ABTestingFramework()")
@@ -456,7 +456,7 @@ if __name__ == "__main__":
     active_tests = framework.get_active_tests()
 
     if active_tests:
-        print(f"\n📊 {len(active_tests)} active tests found\n")
+        print(f"\n[CHART] {len(active_tests)} active tests found\n")
 
         for test in active_tests:
             print(f"Test: {test['name']}")
@@ -474,5 +474,5 @@ if __name__ == "__main__":
 
             print("-" * 70)
     else:
-        print("\n📊 No active tests found")
+        print("\n[CHART] No active tests found")
         print("Tests have been created and are ready to use!")

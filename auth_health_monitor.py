@@ -266,15 +266,15 @@ if __name__ == "__main__":
     print("=" * 70)
 
     # Check all channels
-    print("\n📊 Checking all channels...\n")
+    print("\n[CHART] Checking all channels...\n")
     report = check_all_channels_auth()
 
     print(f"Total Channels: {report['total_channels']}")
-    print(f"Authenticated: ✅ {report['authenticated']}")
-    print(f"Not Authenticated: ❌ {report['not_authenticated']}\n")
+    print(f"Authenticated: [OK] {report['authenticated']}")
+    print(f"Not Authenticated: [ERROR] {report['not_authenticated']}\n")
 
     if report['issues']:
-        print(f"⚠️  Found {len(report['issues'])} issue(s):\n")
+        print(f"[WARNING]  Found {len(report['issues'])} issue(s):\n")
         for issue in report['issues']:
             severity = issue.get('severity', 'WARNING')
             print(f"   [{severity}] {issue['channel']}")
@@ -282,6 +282,6 @@ if __name__ == "__main__":
             print(f"      Issue: {issue['issue']}")
             print(f"      Action: {issue['action']}\n")
     else:
-        print("✅ No authentication issues found!\n")
+        print("[OK] No authentication issues found!\n")
 
     print("=" * 70)

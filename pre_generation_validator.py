@@ -282,36 +282,36 @@ def validate_before_generation(channel_name: str) -> Dict:
 def print_validation_result(result: Dict):
     """Print formatted validation result"""
     print("=" * 70)
-    print(f"🔍 PRE-GENERATION VALIDATION: {result['channel']}")
+    print(f" PRE-GENERATION VALIDATION: {result['channel']}")
     print("=" * 70)
 
     # Overall result
     if result['passed']:
-        print("\n✅ PASSED - Ready for video generation\n")
+        print("\n[OK] PASSED - Ready for video generation\n")
     else:
-        print("\n❌ FAILED - Cannot generate video\n")
+        print("\n[ERROR] FAILED - Cannot generate video\n")
 
     # Individual checks
     print("Validation Checks:\n")
     for check in result['checks']:
-        icon = '✅' if check['passed'] else '❌'
+        icon = '[OK]' if check['passed'] else '[ERROR]'
         critical = ' (CRITICAL)' if check.get('critical') else ''
         print(f"   {icon} {check['name']}{critical}")
         print(f"      {check['message']}")
         if check.get('warning'):
-            print(f"      ⚠️  {check['warning']}")
+            print(f"      [WARNING]  {check['warning']}")
         print()
 
     # Errors
     if result['errors']:
-        print("❌ ERRORS:\n")
+        print("[ERROR] ERRORS:\n")
         for i, error in enumerate(result['errors'], 1):
             print(f"   {i}. {error}")
         print()
 
     # Warnings
     if result['warnings']:
-        print("⚠️  WARNINGS:\n")
+        print("[WARNING]  WARNINGS:\n")
         for i, warning in enumerate(result['warnings'], 1):
             print(f"   {i}. {warning}")
         print()

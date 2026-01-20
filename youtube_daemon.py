@@ -137,7 +137,7 @@ Be specific and technical."""
             # Try to send browser notification
             try:
                 # This would need implementation in Streamlit UI
-                print(f"\n🚨 ALERT: Channel '{channel['name']}' paused due to repeated errors!")
+                print(f"\n ALERT: Channel '{channel['name']}' paused due to repeated errors!")
                 print(f"Error: {error_type}")
                 print(f"See logs for detailed diagnosis.\n")
             except:
@@ -167,7 +167,7 @@ def generate_next_video(channel: Dict) -> Optional[int]:
     channel_id = channel['id']
     channel_name = channel['name']
 
-    add_log(channel_id, "info", "generation", "🎬 Starting video generation...")
+    add_log(channel_id, "info", "generation", "[VIDEO] Starting video generation...")
 
     try:
         # Calculate next post time
@@ -193,7 +193,7 @@ def generate_next_video(channel: Dict) -> Optional[int]:
             best_trend = None
 
         if best_trend and best_trend.get('video_plan_json'):
-            add_log(channel_id, "info", "generation", f"🔥 TRENDING VIDEO: {best_trend['topic']}")
+            add_log(channel_id, "info", "generation", f"[HOT] TRENDING VIDEO: {best_trend['topic']}")
 
             try:
                 import json
@@ -213,7 +213,7 @@ def generate_next_video(channel: Dict) -> Optional[int]:
                 if not should_gen:
                     predicted_score = prediction.get('predicted_score', 0)
                     reasoning = prediction.get('reasoning', 'Low performance predicted')
-                    add_log(channel_id, "warning", "ai_blocked", f"🛑 AI BLOCKED TREND: '{title}' - Score {predicted_score}/100")
+                    add_log(channel_id, "warning", "ai_blocked", f"[STOP] AI BLOCKED TREND: '{title}' - Score {predicted_score}/100")
                     add_log(channel_id, "info", "ai_blocked", f"Reasoning: {reasoning}")
                     # Fall back to regular generation instead of failing completely
                     add_log(channel_id, "info", "generation", "Falling back to regular video generation...")
@@ -221,7 +221,7 @@ def generate_next_video(channel: Dict) -> Optional[int]:
                     # Log AI approval for trend video
                     predicted_score = prediction.get('predicted_score', 50)
                     predicted_views = prediction.get('predicted_views', 0)
-                    add_log(channel_id, "info", "ai_approved", f"✅ AI APPROVED TREND: '{title}' - Score {predicted_score}/100 (predicted {predicted_views:.0f} views)")
+                    add_log(channel_id, "info", "ai_approved", f"[OK] AI APPROVED TREND: '{title}' - Score {predicted_score}/100 (predicted {predicted_views:.0f} views)")
 
                     # Generate dynamic video from AI plan
                     output_dir = os.path.join("outputs", f"channel_{channel_name}")
@@ -245,7 +245,7 @@ def generate_next_video(channel: Dict) -> Optional[int]:
                         # Mark trend as video generated
                         mark_trend_video_generated(best_trend['id'], video_id)
 
-                        add_log(channel_id, "info", "generation", f"✅ Trend video ready: {video_plan['title']}")
+                        add_log(channel_id, "info", "generation", f"[OK] Trend video ready: {video_plan['title']}")
 
                         return video_id
                     else:
@@ -259,13 +259,13 @@ def generate_next_video(channel: Dict) -> Optional[int]:
 
         # If user wants trending but no trends available, inform and fall back to standard
         if video_type == 'trending' and not best_trend:
-            add_log(channel_id, "info", "generation", "⏳ No trending topics available yet. Falling back to standard generation.")
-            add_log(channel_id, "info", "generation", "💡 Tip: Trends are fetched automatically. Check back in a few minutes.")
+            add_log(channel_id, "info", "generation", "[WAIT] No trending topics available yet. Falling back to standard generation.")
+            add_log(channel_id, "info", "generation", "[IDEA] Tip: Trends are fetched automatically. Check back in a few minutes.")
             video_type = 'standard'  # Fallback to standard generation
 
         if video_type == 'ranking':
             # Use ranking video generator (all-in-one function)
-            add_log(channel_id, "info", "generation", "🎬 Starting RANKING video generation...")
+            add_log(channel_id, "info", "generation", "[VIDEO] Starting RANKING video generation...")
 
             # Get AI-driven configuration (includes real-time strategy adaptation and smart A/B split)
             from ai_analytics_enhanced import get_video_generation_config
@@ -278,11 +278,11 @@ def generate_next_video(channel: Dict) -> Optional[int]:
 
             # Log AI decision
             if strategy_working is True:
-                add_log(channel_id, "info", "ai_config", f"🤖 AI Config: Using strategy (confidence: {confidence}%, strategy is WINNING)")
+                add_log(channel_id, "info", "ai_config", f" AI Config: Using strategy (confidence: {confidence}%, strategy is WINNING)")
             elif strategy_working is False:
-                add_log(channel_id, "info", "ai_config", f"🤖 AI Config: Not using strategy (confidence: {confidence}%, strategy is LOSING)")
+                add_log(channel_id, "info", "ai_config", f" AI Config: Not using strategy (confidence: {confidence}%, strategy is LOSING)")
             else:
-                add_log(channel_id, "info", "ai_config", f"🤖 AI Config: Group={ab_test_group}, confidence={confidence}%")
+                add_log(channel_id, "info", "ai_config", f" AI Config: Group={ab_test_group}, confidence={confidence}%")
 
             # Get current AI strategy from old system (for compatibility)
             from ai_analyzer import get_latest_content_strategy
@@ -362,7 +362,7 @@ def generate_next_video(channel: Dict) -> Optional[int]:
         # Update video with path
         update_video(video_id, video_path=video_path, status="ready")
 
-        add_log(channel_id, "info", "generation", f"✅ Video ready: {os.path.basename(video_path)}")
+        add_log(channel_id, "info", "generation", f"[OK] Video ready: {os.path.basename(video_path)}")
 
         # Reset error counter on success
         reset_error_tracker(channel_id, "script_generation")
@@ -394,7 +394,7 @@ def upload_video(video_id: int, channel: Dict) -> bool:
         add_log(channel_id, "error", "upload", "Video not found or not ready")
         return False
 
-    add_log(channel_id, "info", "upload", f"📤 Uploading: {video['title']}")
+    add_log(channel_id, "info", "upload", f" Uploading: {video['title']}")
 
     try:
         # Check authentication
@@ -458,11 +458,11 @@ def upload_video(video_id: int, channel: Dict) -> bool:
                 )
 
                 if ok:
-                    add_log(channel_id, "info", "thumbnail", f"✅ AI thumbnail created: {os.path.basename(thumb_path)}")
+                    add_log(channel_id, "info", "thumbnail", f"[OK] AI thumbnail created: {os.path.basename(thumb_path)}")
                     up_ok, up_msg = upload_thumbnail(video_id_str, channel_name, thumb_path)
                     if up_ok:
                         update_video(video_id, thumbnail_variant='ai_text_overlay')
-                        add_log(channel_id, "info", "thumbnail", "✅ AI thumbnail uploaded to YouTube")
+                        add_log(channel_id, "info", "thumbnail", "[OK] AI thumbnail uploaded to YouTube")
                     else:
                         add_log(channel_id, "warning", "upload", f"Thumbnail upload failed: {up_msg}")
                 else:
@@ -497,7 +497,7 @@ def upload_video(video_id: int, channel: Dict) -> bool:
                     )
 
                     if t_success:
-                        add_log(channel_id, "info", "upload", f"✅ Teaser posted: {t_result}")
+                        add_log(channel_id, "info", "upload", f"[OK] Teaser posted: {t_result}")
                     else:
                         add_log(channel_id, "warning", "upload", f"Teaser upload failed: {t_result}")
                 else:
@@ -523,7 +523,7 @@ def upload_video(video_id: int, channel: Dict) -> bool:
                 next_post_at=(datetime.now() + timedelta(minutes=channel['post_interval_minutes'])).isoformat()
             )
 
-            add_log(channel_id, "info", "upload", f"✅ Posted: {youtube_url}")
+            add_log(channel_id, "info", "upload", f"[OK] Posted: {youtube_url}")
 
             # Cleanup files after successful upload
             try:
@@ -610,7 +610,7 @@ def channel_worker(channel_id: int):
                         try:
                             video_id = generate_next_video(channel)
                             if video_id:
-                                add_log(channel_id, "info", "recovery", f"✅ Generation succeeded on attempt {attempt}")
+                                add_log(channel_id, "info", "recovery", f"[OK] Generation succeeded on attempt {attempt}")
                                 break
                         except Exception as e:
                             add_log(channel_id, "warning", "recovery", f"Attempt {attempt}/3 failed: {str(e)}")
@@ -651,7 +651,7 @@ def channel_worker(channel_id: int):
                         try:
                             success = upload_video(next_video['id'], channel)
                             if success:
-                                add_log(channel_id, "info", "recovery", f"✅ Upload succeeded on attempt {attempt}")
+                                add_log(channel_id, "info", "recovery", f"[OK] Upload succeeded on attempt {attempt}")
                                 break
                         except Exception as e:
                             add_log(channel_id, "warning", "recovery", f"Upload attempt {attempt}/3 failed: {str(e)}")
@@ -678,7 +678,7 @@ def channel_worker(channel_id: int):
             # Check disk space periodically
             used_percent, free_gb = check_disk_space()
             if used_percent > 90:
-                add_log(channel_id, "warning", "system", f"⚠️ Disk space low: {used_percent:.1f}% used, {free_gb:.1f}GB free")
+                add_log(channel_id, "warning", "system", f"[WARNING] Disk space low: {used_percent:.1f}% used, {free_gb:.1f}GB free")
 
             time.sleep(10)  # Check every 10 seconds
 
@@ -686,7 +686,7 @@ def channel_worker(channel_id: int):
             add_log(channel_id, "error", "daemon", f"Worker error (auto-recovering): {str(e)}")
             import traceback
             traceback.print_exc()
-            add_log(channel_id, "info", "recovery", "⚡ AUTO-RECOVERY: Daemon will continue despite error")
+            add_log(channel_id, "info", "recovery", " AUTO-RECOVERY: Daemon will continue despite error")
             time.sleep(60)  # Wait before retry
             # Reset error tracker so we don't accumulate errors
             reset_error_tracker(channel_id)
@@ -711,7 +711,7 @@ def trends_worker():
     """
     global daemon_running
 
-    print("\n🔥 Trends Worker Started")
+    print("\n[HOT] Trends Worker Started")
     print("   → Fetches Google Trends every 6 hours")
     print("   → AI analyzes video potential")
     print("   → Auto-generates video plans\n")
@@ -719,7 +719,7 @@ def trends_worker():
     while daemon_running:
         try:
             print(f"\n{'='*60}")
-            print(f"🔍 FETCHING GOOGLE TRENDS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f" FETCHING GOOGLE TRENDS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             print(f"{'='*60}\n")
 
             # Step 1: Fetch all trending topics
@@ -731,7 +731,7 @@ def trends_worker():
                 if source != 'timestamp' and isinstance(trends, list):
                     combined_trends.extend(trends)
 
-            print(f"✓ Found {len(combined_trends)} unique trends\n")
+            print(f"[OK] Found {len(combined_trends)} unique trends\n")
 
             # Step 2: Filter out duplicates already in database (last 24h)
             new_trends = []
@@ -742,20 +742,20 @@ def trends_worker():
                     trend_id = save_trend(trend)
                     trend['id'] = trend_id
 
-            print(f"✓ {len(new_trends)} new trends (not in database)\n")
+            print(f"[OK] {len(new_trends)} new trends (not in database)\n")
 
             if not new_trends:
-                print("✓ No new trends to analyze\n")
+                print("[OK] No new trends to analyze\n")
             else:
                 # Step 3: AI analyzes trends for video worthiness
-                print("🤖 AI analyzing trends for video potential...\n")
+                print(" AI analyzing trends for video potential...\n")
 
                 # Get all active channels to match trends to themes
                 channels = get_active_channels()
 
                 for channel in channels:
                     channel_theme = channel.get('theme', 'General content')
-                    print(f"\n📺 Analyzing trends for channel: {channel['name']}")
+                    print(f"\n[CHANNEL] Analyzing trends for channel: {channel['name']}")
                     print(f"   Theme: {channel_theme}\n")
 
                     # Analyze trends for this channel
@@ -766,11 +766,11 @@ def trends_worker():
                     )
 
                     if not approved_trends:
-                        print(f"   ℹ️ No approved trends for {channel['name']}\n")
+                        print(f"   ℹ No approved trends for {channel['name']}\n")
                         continue
 
                     # Step 4: AI plans videos for approved trends
-                    print(f"\n🎬 Planning videos for {len(approved_trends)} approved trends...\n")
+                    print(f"\n[VIDEO] Planning videos for {len(approved_trends)} approved trends...\n")
 
                     for trend in approved_trends:
                         try:
@@ -789,20 +789,20 @@ def trends_worker():
                                 # Save video plan to database
                                 update_trend_video_plan(trend_id, video_plan)
 
-                                print(f"   ✅ Planned: {video_plan['title']}")
+                                print(f"   [OK] Planned: {video_plan['title']}")
                                 print(f"      Format: {video_plan['video_type']}")
                                 print(f"      Clips: {video_plan['clip_count']}")
                                 print(f"      Urgency: {analysis.get('urgency', 'unknown')}\n")
                             else:
-                                print(f"   ⚠️ Failed to plan video for: {trend['topic']}\n")
+                                print(f"   [WARNING] Failed to plan video for: {trend['topic']}\n")
 
                         except Exception as e:
-                            print(f"   ❌ Error planning trend: {e}\n")
+                            print(f"   [ERROR] Error planning trend: {e}\n")
 
             # Wait 6 hours before next run
             print(f"\n{'='*60}")
-            print(f"✅ Trends analysis complete")
-            print(f"⏰ Next run in 6 hours")
+            print(f"[OK] Trends analysis complete")
+            print(f"[TIME] Next run in 6 hours")
             print(f"{'='*60}\n")
 
             # Sleep for 6 hours (21600 seconds)
@@ -812,13 +812,13 @@ def trends_worker():
                 time.sleep(60)
 
         except Exception as e:
-            print(f"❌ Trends worker error: {e}")
+            print(f"[ERROR] Trends worker error: {e}")
             import traceback
             traceback.print_exc()
             # Wait 30 minutes before retry on error
             time.sleep(1800)
 
-    print("\n🔥 Trends Worker Stopped\n")
+    print("\n[HOT] Trends Worker Stopped\n")
 
 # ==============================================================================
 # Quota Monitor Worker
@@ -829,11 +829,11 @@ def quota_monitor_worker():
     Background worker that monitors API quotas and auto-resumes channels.
     Checks every hour if quotas have reset and resumes paused channels.
     """
-    print("\n🔍 Starting Quota Monitor...")
+    print("\n Starting Quota Monitor...")
     print("   → Checks API quotas every hour")
     print("   → Auto-resets quotas at midnight")
     print("   → Auto-resumes paused channels when quotas reset")
-    print("✅ Quota monitor active\n")
+    print("[OK] Quota monitor active\n")
 
     while daemon_running:
         try:
@@ -842,14 +842,14 @@ def quota_monitor_worker():
 
             if quotas_reset:
                 print(f"\n{'='*60}")
-                print(f"🔄 QUOTA RESET - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"[REFRESH] QUOTA RESET - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 print(f"{'='*60}\n")
 
                 # Resume any paused channels
                 auto_resume_paused_channels()
 
                 print(f"\n{'='*60}")
-                print(f"✅ All systems resumed")
+                print(f"[OK] All systems resumed")
                 print(f"{'='*60}\n")
 
             # Sleep for 1 hour (3600 seconds)
@@ -859,13 +859,13 @@ def quota_monitor_worker():
                 time.sleep(60)
 
         except Exception as e:
-            print(f"⚠️ Quota monitor error: {e}")
+            print(f"[WARNING] Quota monitor error: {e}")
             import traceback
             traceback.print_exc()
             # Wait 10 minutes before retry on error
             time.sleep(600)
 
-    print("\n🔍 Quota Monitor Stopped\n")
+    print("\n Quota Monitor Stopped\n")
 
 # ==============================================================================
 # Daemon Control
@@ -882,7 +882,7 @@ def start_daemon():
     daemon_running = True
 
     print("=" * 60)
-    print("🚀 YOUTUBE AUTOMATION DAEMON STARTED")
+    print("[LAUNCH] YOUTUBE AUTOMATION DAEMON STARTED")
     print("=" * 60)
     print(f"PID: {os.getpid()}")
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -890,13 +890,13 @@ def start_daemon():
 
     # Initialize quota tracking
     init_quota_table()
-    print("✅ Quota tracking initialized\n")
+    print("[OK] Quota tracking initialized\n")
 
     # Load all active channels
     channels = get_active_channels()
 
     if not channels:
-        print("⚠️ No active channels found. Waiting...")
+        print("[WARNING] No active channels found. Waiting...")
         print("Activate channels in the Streamlit UI.")
         print()
 
@@ -905,32 +905,32 @@ def start_daemon():
         start_channel_worker(channel['id'])
 
     # Start BULLETPROOF auth auto-refresh (prevents ALL auth failures)
-    print("\n🔐 Starting Bulletproof YouTube Auth System...")
+    print("\n Starting Bulletproof YouTube Auth System...")
     print("   → Auto-refreshes tokens every 30 minutes")
     print("   → Proactive refresh 2 hours before expiration")
     print("   → Multiple retry attempts with exponential backoff")
     print("   → Backup token preservation")
     from auth_manager import start_auto_refresh
     start_auto_refresh()
-    print("✅ Bulletproof auth active - ZERO auth failures guaranteed\n")
+    print("[OK] Bulletproof auth active - ZERO auth failures guaranteed\n")
 
     # Start autonomous learning system (runs every 6 hours)
-    print("\n🧠 Starting Autonomous AI Learning System...")
+    print("\n Starting Autonomous AI Learning System...")
     print("   → Analyzes video performance automatically")
     print("   → Improves future videos without user intervention")
     print("   → Runs every 6 hours in background")
     start_autonomous_learning()
-    print("✅ Autonomous learning active\n")
+    print("[OK] Autonomous learning active\n")
 
     # Start Google Trends worker (runs every 6 hours)
-    print("🔥 Starting Google Trends Autonomous System...")
+    print("[HOT] Starting Google Trends Autonomous System...")
     print("   → Fetches trending topics every 6 hours")
     print("   → AI analyzes video potential")
     print("   → Auto-generates video plans for trends")
     print("   → Prioritizes trending videos over regular content")
     trends_thread = threading.Thread(target=trends_worker, daemon=True, name="TrendsWorker")
     trends_thread.start()
-    print("✅ Google Trends system active\n")
+    print("[OK] Google Trends system active\n")
 
     # Start Quota Monitor (checks every hour, resets at midnight)
     quota_thread = threading.Thread(target=quota_monitor_worker, daemon=True, name="QuotaMonitor")
@@ -955,7 +955,7 @@ def start_daemon():
             time.sleep(10)  # Check every 10 seconds
 
         except KeyboardInterrupt:
-            print("\n⚠️ Received interrupt signal...")
+            print("\n[WARNING] Received interrupt signal...")
             stop_daemon()
             break
         except Exception as e:
@@ -981,7 +981,7 @@ def start_channel_worker(channel_id: int):
     thread.start()
 
     channel_threads[channel_id] = thread
-    print(f"✅ Started worker for channel: {channel['name']}")
+    print(f"[OK] Started worker for channel: {channel['name']}")
 
 def stop_channel_worker(channel_id: int):
     """Stop worker thread for a channel"""
@@ -993,14 +993,14 @@ def stop_channel_worker(channel_id: int):
 
         channel = get_channel(channel_id)
         if channel:
-            print(f"⏸️  Stopped worker for channel: {channel['name']}")
+            print(f"⏸  Stopped worker for channel: {channel['name']}")
 
 def stop_daemon():
     """Stop the daemon"""
     global daemon_running
 
     print("\n" + "=" * 60)
-    print("🛑 STOPPING DAEMON...")
+    print("[STOP] STOPPING DAEMON...")
     print("=" * 60)
 
     daemon_running = False
@@ -1019,7 +1019,7 @@ def stop_daemon():
     if os.path.exists(daemon_pid_file):
         os.remove(daemon_pid_file)
 
-    print("✅ Daemon stopped")
+    print("[OK] Daemon stopped")
 
 def signal_handler(signum, frame):
     """Handle signals (SIGTERM, SIGINT)"""

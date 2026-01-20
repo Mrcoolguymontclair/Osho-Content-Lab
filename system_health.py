@@ -308,29 +308,29 @@ class SystemHealthMonitor:
         report = self.get_full_health_report()
 
         print("=" * 70)
-        print("🏥 SYSTEM HEALTH REPORT")
+        print(" SYSTEM HEALTH REPORT")
         print("=" * 70)
         print(f"\nTimestamp: {report['timestamp']}")
 
         # Overall status
         status_icon = {
-            'healthy': '✅',
-            'degraded': '⚠️',
-            'warning': '⚠️',
-            'critical': '❌',
-            'error': '❌',
-            'stopped': '⏸️',
-            'unknown': '❓'
+            'healthy': '[OK]',
+            'degraded': '[WARNING]',
+            'warning': '[WARNING]',
+            'critical': '[ERROR]',
+            'error': '[ERROR]',
+            'stopped': '⏸',
+            'unknown': ''
         }
 
-        overall_icon = status_icon.get(report['overall_status'], '❓')
+        overall_icon = status_icon.get(report['overall_status'], '')
         print(f"Overall Status: {overall_icon} {report['overall_status'].upper()}\n")
 
         # Component details
-        print("📊 Component Status:\n")
+        print("[CHART] Component Status:\n")
 
         for component_name, data in report['components'].items():
-            icon = status_icon.get(data['status'], '❓')
+            icon = status_icon.get(data['status'], '')
             print(f"   {icon} {component_name.replace('_', ' ').title()}: {data['status'].upper()}")
 
             # Show relevant details
@@ -341,13 +341,13 @@ class SystemHealthMonitor:
 
             elif component_name == 'authentication':
                 if data['critical_issues'] > 0:
-                    print(f"      ⚠️  {data['critical_issues']} CRITICAL authentication issues")
+                    print(f"      [WARNING]  {data['critical_issues']} CRITICAL authentication issues")
                 print(f"      {data['authenticated']} authenticated, {data['not_authenticated']} not authenticated")
 
             elif component_name == 'disk_space':
                 print(f"      {data['total_size_gb']:.1f} GB used ({data['total_files']:,} files)")
                 if data['deletable_files'] > 0:
-                    print(f"      💡 Can recover {data['deletable_gb']:.1f} GB by deleting {data['deletable_files']} old files")
+                    print(f"      [IDEA] Can recover {data['deletable_gb']:.1f} GB by deleting {data['deletable_files']} old files")
 
             elif component_name == 'api_keys':
                 if 'error' not in data:
@@ -364,19 +364,19 @@ class SystemHealthMonitor:
         recommendations = []
 
         if report['components']['authentication']['status'] in ['degraded', 'critical']:
-            recommendations.append("🔧 Re-authenticate channels in UI Settings tab")
+            recommendations.append("[CONFIG] Re-authenticate channels in UI Settings tab")
 
         if report['components']['video_generation']['last_24h']['success_rate'] < 50:
-            recommendations.append("🔧 Check daemon logs for recurring errors")
+            recommendations.append("[CONFIG] Check daemon logs for recurring errors")
 
         if report['components']['disk_space']['deletable_gb'] > 1:
-            recommendations.append("🧹 Run: python3 file_cleanup.py --execute")
+            recommendations.append(" Run: python3 file_cleanup.py --execute")
 
         if not report['components']['daemon']['running']:
-            recommendations.append("🚀 Start daemon: python3 youtube_daemon.py start")
+            recommendations.append("[LAUNCH] Start daemon: python3 youtube_daemon.py start")
 
         if recommendations:
-            print("\n📋 RECOMMENDED ACTIONS:\n")
+            print("\n RECOMMENDED ACTIONS:\n")
             for i, rec in enumerate(recommendations, 1):
                 print(f"   {i}. {rec}")
             print()

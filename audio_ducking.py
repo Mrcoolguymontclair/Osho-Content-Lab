@@ -117,4 +117,4 @@ if __name__ == "__main__":
     print("  • Music drops to 6% when voice speaks")
     print("  • Smooth 50ms attack, 300ms release")
     print("  • Triggered at -30dB voice threshold")
-    print("\n✅ Ensures voiceover is always clearly audible")
+    print("\n[OK] Ensures voiceover is always clearly audible")

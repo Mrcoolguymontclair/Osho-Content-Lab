@@ -152,10 +152,10 @@ def generate_video_script(
     if strategy and strategy.get('recommended_topics'):
         ai_guidance = f"""
 DATA-DRIVEN INSIGHTS (from video performance analysis):
-✅ PROVEN SUCCESSFUL TOPICS: {', '.join(strategy['recommended_topics'][:3])}
-✅ WINNING CONTENT STYLE: {strategy.get('content_style', 'Not available')}
-✅ HOOK TEMPLATES THAT WORK: {', '.join(strategy.get('hook_templates', [])[:2])}
-⚠️ AVOID THESE: {', '.join(strategy.get('avoid_topics', [])[:2])}
+[OK] PROVEN SUCCESSFUL TOPICS: {', '.join(strategy['recommended_topics'][:3])}
+[OK] WINNING CONTENT STYLE: {strategy.get('content_style', 'Not available')}
+[OK] HOOK TEMPLATES THAT WORK: {', '.join(strategy.get('hook_templates', [])[:2])}
+[WARNING] AVOID THESE: {', '.join(strategy.get('avoid_topics', [])[:2])}
 
 Use these insights to create content proven to perform well with THIS specific audience."""
     else:
@@ -275,7 +275,7 @@ def generate_voiceover(
 
             # Verify Edge TTS output
             if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-                log_to_db(channel_id, "info", "voiceover", f"✨ Edge TTS: {os.path.basename(output_path)}")
+                log_to_db(channel_id, "info", "voiceover", f" Edge TTS: {os.path.basename(output_path)}")
                 return True, None
             else:
                 raise Exception("Edge TTS output invalid")
@@ -732,7 +732,7 @@ def assemble_viral_video(
 
             voiceover_files.append(vo_path)
 
-        log_to_db(channel_id, "info", "assembly", f"✓ Generated {len(voiceover_files)} voiceovers")
+        log_to_db(channel_id, "info", "assembly", f"[OK] Generated {len(voiceover_files)} voiceovers")
 
         # =============================================================
         # STEP 2: Download all video clips (MATCHED to voiceover duration)
@@ -755,7 +755,7 @@ def assemble_viral_video(
         if len(clip_files) < 5:  # Need at least 5 clips
             return None, f"Only {len(clip_files)} clips downloaded, need at least 5"
 
-        log_to_db(channel_id, "info", "assembly", f"✓ Downloaded {len(clip_files)} clips")
+        log_to_db(channel_id, "info", "assembly", f"[OK] Downloaded {len(clip_files)} clips")
 
         # =============================================================
         # STEP 3: Download background music
@@ -770,7 +770,7 @@ def assemble_viral_video(
             log_to_db(channel_id, "warning", "assembly", f"Music download failed: {music_error}")
             music_path = None  # Continue without music
 
-        log_to_db(channel_id, "info", "assembly", "✓ Background music ready")
+        log_to_db(channel_id, "info", "assembly", "[OK] Background music ready")
 
         # =============================================================
         # STEP 4: Concat video clips (DEMUXER METHOD - from testing!)
@@ -793,7 +793,7 @@ def assemble_viral_video(
         if result.returncode != 0:
             return None, f"Video concat failed: {result.stderr.decode()[:200]}"
 
-        log_to_db(channel_id, "info", "assembly", "✓ Video clips concatenated")
+        log_to_db(channel_id, "info", "assembly", "[OK] Video clips concatenated")
 
         # =============================================================
         # STEP 5: Concat voiceovers (DEMUXER METHOD - NOT filter_complex!)
@@ -817,7 +817,7 @@ def assemble_viral_video(
         if result.returncode != 0:
             return None, f"Voiceover concat failed: {result.stderr.decode()[:200]}"
 
-        log_to_db(channel_id, "info", "assembly", "✓ Voiceovers concatenated")
+        log_to_db(channel_id, "info", "assembly", "[OK] Voiceovers concatenated")
 
         # =============================================================
         # STEP 6: Generate SRT subtitles
@@ -833,7 +833,7 @@ def assemble_viral_video(
                 f.write(f"00:00:{start_sec:02d},000 --> 00:00:{end_sec:02d},000\n")
                 f.write(f"{narration}\n\n")
 
-        log_to_db(channel_id, "info", "assembly", "✓ Subtitles generated")
+        log_to_db(channel_id, "info", "assembly", "[OK] Subtitles generated")
 
         # =============================================================
         # STEP 7: Burn subtitles (20pt Arial, bottom-aligned - from testing!)
@@ -853,7 +853,7 @@ def assemble_viral_video(
         if result.returncode != 0:
             return None, f"Subtitle burn failed: {result.stderr.decode()[:200]}"
 
-        log_to_db(channel_id, "info", "assembly", "✓ Subtitles added")
+        log_to_db(channel_id, "info", "assembly", "[OK] Subtitles added")
 
         # =============================================================
         # STEP 8: Mix background music with voiceover
@@ -880,7 +880,7 @@ def assemble_viral_video(
             # No music, use voiceover only
             final_audio = concat_vo
 
-        log_to_db(channel_id, "info", "assembly", "✓ Audio mixed")
+        log_to_db(channel_id, "info", "assembly", "[OK] Audio mixed")
 
         # =============================================================
         # STEP 9: Merge final audio with video
@@ -904,7 +904,7 @@ def assemble_viral_video(
         if result.returncode != 0:
             return None, f"Final merge failed: {result.stderr.decode()[:200]}"
 
-        log_to_db(channel_id, "info", "assembly", "✓ Final video merged")
+        log_to_db(channel_id, "info", "assembly", "[OK] Final video merged")
 
         # =============================================================
         # STEP 10: Verify audio stream (CRITICAL - from our testing!)
@@ -927,12 +927,12 @@ def assemble_viral_video(
             final_duration = float(duration_check.stdout.strip())
             if final_duration > 175:  # 2min 55sec max (safety margin)
                 return None, f"Video too long! {final_duration:.1f}s (max 175s for YouTube Shorts)"
-            log_to_db(channel_id, "info", "assembly", f"✓ Duration: {final_duration:.1f}s")
+            log_to_db(channel_id, "info", "assembly", f"[OK] Duration: {final_duration:.1f}s")
         except:
             log_to_db(channel_id, "warning", "assembly", "Could not verify duration")
 
         size_mb = os.path.getsize(final_video) / (1024 * 1024)
-        log_to_db(channel_id, "info", "assembly", f"✓ Video complete! Size: {size_mb:.1f}MB")
+        log_to_db(channel_id, "info", "assembly", f"[OK] Video complete! Size: {size_mb:.1f}MB")
 
         return final_video, None
 

@@ -11,10 +11,10 @@ from channel_manager import get_channel, add_log
 
 
 PINNED_COMMENT_TEMPLATES = {
-    'question': "What's your experience with this? 👇 Best replies might get featured!",
-    'poll': "Which was your favorite? Let us know in the comments! 🔥",
-    'engagement': "Don't forget to like and subscribe for more content like this! 💪",
-    'cta': "Watch the full version and subscribe for more viral content! 🚀"
+    'question': "What's your experience with this?  Best replies might get featured!",
+    'poll': "Which was your favorite? Let us know in the comments! [HOT]",
+    'engagement': "Don't forget to like and subscribe for more content like this! ",
+    'cta': "Watch the full version and subscribe for more viral content! [LAUNCH]"
 }
 
 

@@ -34,7 +34,7 @@ Only 2% of viewers engage with your videos. 98% scroll away immediately.
 
 ## Phase 1: Core Retention Fixes (Week 1-2)
 
-### 1.1 Explosive First 3 Seconds ⚡
+### 1.1 Explosive First 3 Seconds 
 
 **Priority: CRITICAL**
 **Impact: +40% retention improvement**
@@ -140,31 +140,31 @@ def create_hook_overlay(
     styles = {
         'curiosity_gap': {
             'color': 'yellow',
-            'emoji': '🤔',
+            'emoji': '',
             'size': 120,
             'animation': 'fade_zoom'
         },
         'bold_claim': {
             'color': 'red',
-            'emoji': '🚨',
+            'emoji': '',
             'size': 110,
             'animation': 'shake'
         },
         'fomo': {
             'color': 'orange',
-            'emoji': '⚡',
+            'emoji': '',
             'size': 115,
             'animation': 'pulse'
         },
         'question_hook': {
             'color': 'cyan',
-            'emoji': '❓',
+            'emoji': '',
             'size': 110,
             'animation': 'slide_in'
         },
         'challenge': {
             'color': 'green',
-            'emoji': '🎯',
+            'emoji': '[TARGET]',
             'size': 120,
             'animation': 'bounce'
         }
@@ -288,7 +288,7 @@ create_hook_overlay(
 
 ---
 
-### 1.2 SSML-Enhanced Voiceovers 🎤
+### 1.2 SSML-Enhanced Voiceovers [VOICE]
 
 **Priority: CRITICAL**
 **Impact: +30% retention improvement**
@@ -482,14 +482,14 @@ def generate_voiceover(
             asyncio.run(generate_edge_tts())
 
             if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
-                log_to_db(channel_id, "info", "voiceover", f"✨ Edge TTS (SSML): {os.path.basename(output_path)}")
+                log_to_db(channel_id, "info", "voiceover", f" Edge TTS (SSML): {os.path.basename(output_path)}")
                 return True, None
             # ... rest of fallback logic
 ```
 
 ---
 
-### 1.3 Mobile-Optimized Subtitle System 📱
+### 1.3 Mobile-Optimized Subtitle System 
 
 **Priority: CRITICAL**
 **Impact: +15% retention improvement**
@@ -581,7 +581,7 @@ with open(subs_file, 'w') as f:
 
         cumulative_time += vo_duration
 
-log_to_db(channel_id, "info", "assembly", "✓ Enhanced subtitles with word animation")
+log_to_db(channel_id, "info", "assembly", "[OK] Enhanced subtitles with word animation")
 
 # STEP 7: Burn subtitles (now uses ASS format with word-by-word)
 log_to_db(channel_id, "info", "assembly", "Step 7/10: Burning subtitles...")
@@ -598,7 +598,7 @@ result = subprocess.run([
 
 ---
 
-### 1.4 Configurable Segment System ⚙️
+### 1.4 Configurable Segment System [SETTINGS]
 
 **Priority: HIGH**
 **Impact: Enables dynamic pacing**
@@ -661,7 +661,7 @@ Add to `new_vid_gen.py` settings tab:
 
 ```python
 # In channel settings section
-st.subheader("⏱️ Video Pacing Configuration")
+st.subheader("⏱ Video Pacing Configuration")
 
 col1, col2 = st.columns(2)
 
@@ -697,7 +697,7 @@ with col2:
         # Parse custom durations
         try:
             durations = [int(x.strip()) for x in custom_durations.split(',')]
-            st.success(f"✅ {len(durations)} segments, {sum(durations)}s total")
+            st.success(f"[OK] {len(durations)} segments, {sum(durations)}s total")
         except:
             st.error("Invalid format. Use comma-separated numbers.")
 
@@ -709,14 +709,14 @@ if st.button("Save Pacing Settings"):
         pacing_preset=pacing_preset,
         segment_durations_json=json.dumps(durations)
     )
-    st.success("✅ Pacing settings saved!")
+    st.success("[OK] Pacing settings saved!")
 ```
 
 ---
 
 ## Phase 2: Visual Excellence (Week 2-3)
 
-### 2.1 Transition Effects Between Clips 🎬
+### 2.1 Transition Effects Between Clips [VIDEO]
 
 **Priority: HIGH**
 **Impact: +8% retention**
@@ -853,7 +853,7 @@ def _build_flash_filter(clips: List[str], duration: float) -> str:
 
 ---
 
-### 2.2 Color Grading System 🎨
+### 2.2 Color Grading System [DESIGN]
 
 **Priority: MEDIUM**
 **Impact: +5% retention**
@@ -948,7 +948,7 @@ def apply_color_grade(
 
 ## Phase 3: Analytics Integration (Week 3-4)
 
-### 3.1 YouTube Analytics API Integration 📊
+### 3.1 YouTube Analytics API Integration [CHART]
 
 **Priority: CRITICAL**
 **Impact: Enables all optimization**
@@ -1052,7 +1052,7 @@ def update_video_retention_data(video_id: int, youtube_video_id: str):
             avg_watch_time=retention['key_moments'].get('full', 0)
         )
 
-        print(f"✅ Updated retention data for video {video_id}")
+        print(f"[OK] Updated retention data for video {video_id}")
         print(f"   0-3s: {retention['key_moments'].get('0-3s', 0):.1f}%")
         print(f"   0-10s: {retention['key_moments'].get('0-10s', 0):.1f}%")
         print(f"   Full: {retention['key_moments'].get('full', 0):.1f}%")
@@ -1060,7 +1060,7 @@ def update_video_retention_data(video_id: int, youtube_video_id: str):
 
 ---
 
-### 3.2 Retention-Driven Hook Optimization 🎯
+### 3.2 Retention-Driven Hook Optimization [TARGET]
 
 **Priority: HIGH**
 **Impact: +20-30% over time**
@@ -1269,7 +1269,7 @@ Channel ID: {channel_id}
     for i, (hook_type, data) in enumerate(sorted_hooks, 1):
         report += f"{i}. **{hook_type}**: {data['avg_retention']:.1f}% retention (n={data['count']})\n"
 
-    report += f"\n✅ **Recommended Hook**: {best_hook}\n\n"
+    report += f"\n[OK] **Recommended Hook**: {best_hook}\n\n"
 
     # Drop-off analysis
     report += "## Common Drop-Off Points\n\n"
@@ -1316,7 +1316,7 @@ Channel ID: {channel_id}
 
 ## Phase 4: Advanced Features (Week 4+)
 
-### 4.1 Multi-Voice Dialogue System 🎭
+### 4.1 Multi-Voice Dialogue System 
 
 **Priority: MEDIUM**
 **Impact: +6% retention**
@@ -1371,28 +1371,28 @@ def generate_voiceover_multi_voice(
 ## Implementation Timeline
 
 **Week 1:**
-- ✅ Hook-enforced script generation
-- ✅ SSML processor module
-- ✅ 48-60pt subtitle system
-- ✅ Configurable segments (database + UI)
+- [OK] Hook-enforced script generation
+- [OK] SSML processor module
+- [OK] 48-60pt subtitle system
+- [OK] Configurable segments (database + UI)
 
 **Week 2:**
-- ✅ Visual hook overlays
-- ✅ Transition effects module
-- ✅ Color grading system
-- ✅ Pacing presets implementation
+- [OK] Visual hook overlays
+- [OK] Transition effects module
+- [OK] Color grading system
+- [OK] Pacing presets implementation
 
 **Week 3:**
-- ✅ YouTube Analytics API integration
-- ✅ Retention curve fetching
-- ✅ Hook effectiveness tracking
-- ✅ Segment drop-off analysis
+- [OK] YouTube Analytics API integration
+- [OK] Retention curve fetching
+- [OK] Hook effectiveness tracking
+- [OK] Segment drop-off analysis
 
 **Week 4:**
-- ✅ Retention optimizer module
-- ✅ Multi-voice dialogue system
-- ✅ Automated optimization reports
-- ✅ A/B testing of improvements
+- [OK] Retention optimizer module
+- [OK] Multi-voice dialogue system
+- [OK] Automated optimization reports
+- [OK] A/B testing of improvements
 
 ---
 

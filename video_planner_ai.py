@@ -137,7 +137,7 @@ The video MUST be exactly 45 seconds total (segments must sum to 45)."""
 
         # Validation
         if not validate_video_plan(video_plan):
-            print("❌ Video plan failed validation")
+            print("[ERROR] Video plan failed validation")
             return None
 
         # Add metadata
@@ -148,10 +148,10 @@ The video MUST be exactly 45 seconds total (segments must sum to 45)."""
         return video_plan
 
     except json.JSONDecodeError as e:
-        print(f"❌ JSON parse error in video planning: {e}")
+        print(f"[ERROR] JSON parse error in video planning: {e}")
         return None
     except Exception as e:
-        print(f"❌ Video planning error: {e}")
+        print(f"[ERROR] Video planning error: {e}")
         return None
 
 
@@ -166,25 +166,25 @@ def validate_video_plan(plan: Dict) -> bool:
     # Check required fields
     for field in required_fields:
         if field not in plan:
-            print(f"❌ Missing required field: {field}")
+            print(f"[ERROR] Missing required field: {field}")
             return False
 
     # Validate video type
     valid_types = ['comparison', 'explainer', 'timeline', 'prediction', 'tutorial', 'highlights', 'ranking']
     if plan['video_type'] not in valid_types:
-        print(f"❌ Invalid video type: {plan['video_type']}")
+        print(f"[ERROR] Invalid video type: {plan['video_type']}")
         return False
 
     # Validate clip count
     clip_count = plan['clip_count']
     if not isinstance(clip_count, int) or clip_count < 3 or clip_count > 10:
-        print(f"❌ Invalid clip count: {clip_count} (must be 3-10)")
+        print(f"[ERROR] Invalid clip count: {clip_count} (must be 3-10)")
         return False
 
     # Validate segments
     segments = plan.get('segments', [])
     if len(segments) != clip_count:
-        print(f"❌ Segment count mismatch: {len(segments)} segments, expected {clip_count}")
+        print(f"[ERROR] Segment count mismatch: {len(segments)} segments, expected {clip_count}")
         return False
 
     # Validate each segment
@@ -192,24 +192,24 @@ def validate_video_plan(plan: Dict) -> bool:
         required_segment_fields = ['segment_number', 'duration', 'visual_description', 'narration', 'search_query']
         for field in required_segment_fields:
             if field not in segment:
-                print(f"❌ Segment {i+1} missing field: {field}")
+                print(f"[ERROR] Segment {i+1} missing field: {field}")
                 return False
 
     # Validate total duration
     total_duration = sum(seg['duration'] for seg in segments)
     if abs(total_duration - 45) > 1:  # Allow 1 second tolerance
-        print(f"❌ Total duration {total_duration}s != 45s")
+        print(f"[ERROR] Total duration {total_duration}s != 45s")
         return False
 
     # Validate title length
     title = plan.get('title', '')
     if len(title) > 60:
-        print(f"❌ Title too long: {len(title)} chars (max 60)")
+        print(f"[ERROR] Title too long: {len(title)} chars (max 60)")
         return False
 
     # Check for ALL CAPS (spam indicator)
     if title.isupper():
-        print(f"❌ Title is ALL CAPS (spam)")
+        print(f"[ERROR] Title is ALL CAPS (spam)")
         return False
 
     return True
@@ -265,7 +265,7 @@ Title: Under 60 chars, Title Case"""
         return None
 
     except Exception as e:
-        print(f"❌ Comparison planning error: {e}")
+        print(f"[ERROR] Comparison planning error: {e}")
         return None
 
 
@@ -322,7 +322,7 @@ Title: Under 60 chars, Title Case"""
         return None
 
     except Exception as e:
-        print(f"❌ Timeline planning error: {e}")
+        print(f"[ERROR] Timeline planning error: {e}")
         return None
 
 
@@ -388,10 +388,10 @@ if __name__ == "__main__":
     video_plan = plan_video_from_trend(sample_trend, sample_analysis, sample_channel)
 
     if video_plan:
-        print("✅ VIDEO PLAN GENERATED\n")
+        print("[OK] VIDEO PLAN GENERATED\n")
         print(get_video_plan_summary(video_plan))
 
         print("\nFull JSON:")
         print(json.dumps(video_plan, indent=2))
     else:
-        print("❌ PLANNING FAILED")
+        print("[ERROR] PLANNING FAILED")

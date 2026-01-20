@@ -254,10 +254,10 @@ if __name__ == "__main__":
         )
 
         if success:
-            print(f"✅ Thumbnail generated: {test_output}")
+            print(f"[OK] Thumbnail generated: {test_output}")
         else:
-            print(f"❌ Error: {error}")
+            print(f"[ERROR] Error: {error}")
     else:
-        print(f"⚠️ Test video not found: {test_video}")
+        print(f"[WARNING] Test video not found: {test_video}")
         print("\nTo test, provide a video file path:")
         print("python3 thumbnail_ai.py")

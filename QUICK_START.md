@@ -1,18 +1,18 @@
 # Quick Reference: All-In Improvements Deployment
 
-## 🚀 What Just Got Implemented
+## [LAUNCH] What Just Got Implemented
 
-✅ **Thumbnails** — Auto-generate + manual templates + A/B testing  
-✅ **Titles** — 3 variants per video, randomized, tracked  
-✅ **Teasers** — Auto-generate 15s clips, upload as separate video  
-✅ **Analytics** — Fetch views/CTR/engagement, track in DB  
-✅ **A/B Testing** — Success score calculation, winner analysis, auto-rollout  
-✅ **Comments** — Pinned comment templates, engagement tracking  
-✅ **Logging** — FFmpeg errors and experiment results  
+[OK] **Thumbnails** — Auto-generate + manual templates + A/B testing  
+[OK] **Titles** — 3 variants per video, randomized, tracked  
+[OK] **Teasers** — Auto-generate 15s clips, upload as separate video  
+[OK] **Analytics** — Fetch views/CTR/engagement, track in DB  
+[OK] **A/B Testing** — Success score calculation, winner analysis, auto-rollout  
+[OK] **Comments** — Pinned comment templates, engagement tracking  
+[OK] **Logging** — FFmpeg errors and experiment results  
 
 ---
 
-## 📊 Quick Numbers
+## [CHART] Quick Numbers
 
 | Improvement | Expected CTR Lift | Timeline |
 |------------|------------------|----------|
@@ -23,7 +23,7 @@
 
 ---
 
-## 🔧 3 Things to Do Right Now
+## [CONFIG] 3 Things to Do Right Now
 
 ### 1. Restart the daemon
 ```bash
@@ -44,7 +44,7 @@ nohup python3 youtube_daemon.py > youtube_daemon.log 2>&1 &
 
 ---
 
-## 📈 Monitor These in First Week
+## [TRENDING] Monitor These in First Week
 
 1. **Views in first hour** — Should increase by 20–50%
 2. **CTR** — Track in logs or YouTube Studio
@@ -53,7 +53,7 @@ nohup python3 youtube_daemon.py > youtube_daemon.log 2>&1 &
 
 ---
 
-## 🎯 Success Markers (First 30 Days)
+## [TARGET] Success Markers (First 30 Days)
 
 - [ ] 50+ videos with mixed thumbnails (auto + manual)
 - [ ] A/B results show +10% lift in at least one metric
@@ -65,7 +65,7 @@ nohup python3 youtube_daemon.py > youtube_daemon.log 2>&1 &
 
 ---
 
-## 📁 Key Files (Know These)
+## [FOLDER] Key Files (Know These)
 
 | File | What It Does |
 |------|-------------|
@@ -77,7 +77,7 @@ nohup python3 youtube_daemon.py > youtube_daemon.log 2>&1 &
 
 ---
 
-## 🔍 Common Queries (SQLite)
+##  Common Queries (SQLite)
 
 **Check latest videos:**
 ```sql
@@ -100,7 +100,7 @@ FROM videos WHERE ab_test_group IS NOT NULL GROUP BY ab_test_group;
 
 ---
 
-## ⚡ Troubleshooting
+##  Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
@@ -111,7 +111,7 @@ FROM videos WHERE ab_test_group IS NOT NULL GROUP BY ab_test_group;
 
 ---
 
-## 📞 Next Steps
+##  Next Steps
 
 1. **Today:** Restart daemon, verify first video gets thumbnail
 2. **Day 1–7:** Let system run, collect data on 50+ videos
@@ -121,13 +121,13 @@ FROM videos WHERE ab_test_group IS NOT NULL GROUP BY ab_test_group;
 
 ---
 
-## 🎁 Bonus: Manual Thumbnail Fast Path
+##  Bonus: Manual Thumbnail Fast Path
 
 No design skills? Use this formula:
 ```
 Background: Black
 Text: "5" (yellow, 150pt) + "SHOCKING" (white, 80pt)
-Icon: 🔥 in corner
+Icon: [HOT] in corner
 Font: Impact or Arial Black
 Time: 5 minutes in Canva
 Expected CTR Lift: +15–25%
@@ -135,4 +135,4 @@ Expected CTR Lift: +15–25%
 
 ---
 
-**You've got all the tools. Time to scale. 🚀**
+**You've got all the tools. Time to scale. [LAUNCH]**

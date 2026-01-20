@@ -135,7 +135,7 @@ RULES:
         prediction = json.loads(content.strip())
 
         # Log prediction
-        verdict = "✅ APPROVED" if prediction['should_generate'] else "❌ BLOCKED"
+        verdict = "[OK] APPROVED" if prediction['should_generate'] else "[ERROR] BLOCKED"
         add_log(channel_id, "info", "prediction",
                f"{verdict} '{title}' - Score: {prediction['predicted_score']}/100")
 
@@ -491,7 +491,7 @@ if __name__ == "__main__":
         prediction = predict_video_performance(title, topic, channel_id)
         print(f"\nTitle: {title}")
         print(f"  Score: {prediction['predicted_score']}/100")
-        print(f"  Should Generate: {'✅ YES' if prediction['should_generate'] else '❌ NO'}")
+        print(f"  Should Generate: {'[OK] YES' if prediction['should_generate'] else '[ERROR] NO'}")
         print(f"  Risk: {prediction.get('risk_level', 'unknown')}")
 
     # Test 2: Real-time strategy adaptation
@@ -510,4 +510,4 @@ if __name__ == "__main__":
     config = get_video_generation_config(channel_id)
     print(json.dumps(config, indent=2))
 
-    print("\n✅ All tests complete!")
+    print("\n[OK] All tests complete!")

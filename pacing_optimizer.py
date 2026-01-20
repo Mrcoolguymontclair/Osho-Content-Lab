@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     for rank in sorted(plan['durations'].keys(), reverse=True):
         duration = plan['durations'][rank]
-        bar = "█" * int(duration)
+        bar = "" * int(duration)
         print(f"  Rank {rank}: {duration:5.1f}s {bar}")
 
-    print("\n✅ Dramatic pacing creates build-up to climax (#1)")
+    print("\n[OK] Dramatic pacing creates build-up to climax (#1)")

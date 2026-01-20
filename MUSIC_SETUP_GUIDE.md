@@ -2,7 +2,7 @@
 
 Your YouTube automation system now supports background music with smart tag-based matching!
 
-## 🎵 Quick Start
+## [MUSIC] Quick Start
 
 ### Step 1: Download Music
 
@@ -58,7 +58,7 @@ The system will automatically:
 3. Best matching track is selected
 4. Music is mixed with voiceover at your volume setting
 
-## 📋 Tagging Guide
+##  Tagging Guide
 
 ### Good Tag Examples
 
@@ -89,7 +89,7 @@ The system will automatically:
 }
 ```
 
-## 🎚️ Volume Recommendations
+##  Volume Recommendations
 
 - **0%** = No music (voiceover only)
 - **10-15%** = Subtle background (recommended for most content)
@@ -97,35 +97,35 @@ The system will automatically:
 - **40-50%** = Music prominent (use for music-focused content)
 - **60%+** = Very loud (not recommended, may overpower voice)
 
-## 🔍 How Matching Works
+##  How Matching Works
 
 1. **AI generates script** with music keywords like "energetic electronic"
 2. **System parses keywords**: ["energetic", "electronic"]
 3. **Scores each music file**:
-   - "high_energy_electronic.mp3" tags: ["energetic", "electronic"] → Score: 2/2 ✓
+   - "high_energy_electronic.mp3" tags: ["energetic", "electronic"] → Score: 2/2 [OK]
    - "peaceful_ambient.mp3" tags: ["calm", "peaceful"] → Score: 0/2
 4. **Selects best match** (randomly picks from top-scoring files)
 
-## 📁 File Organization Tips
+## [FOLDER] File Organization Tips
 
 **Organize by mood:**
 ```
 music/
-├── energetic_track_1.mp3
-├── energetic_track_2.mp3
-├── calm_ambient_1.mp3
-├── calm_ambient_2.mp3
-├── dramatic_epic_1.mp3
-└── music_library.json
+ energetic_track_1.mp3
+ energetic_track_2.mp3
+ calm_ambient_1.mp3
+ calm_ambient_2.mp3
+ dramatic_epic_1.mp3
+ music_library.json
 ```
 
 **Name files descriptively:**
-- ✅ `energetic_electronic_upbeat.mp3`
-- ✅ `calm_piano_peaceful.mp3`
-- ❌ `track_01.mp3`
-- ❌ `download_xyz.mp3`
+- [OK] `energetic_electronic_upbeat.mp3`
+- [OK] `calm_piano_peaceful.mp3`
+- [ERROR] `track_01.mp3`
+- [ERROR] `download_xyz.mp3`
 
-## 🛠️ Helper Commands
+##  Helper Commands
 
 ```bash
 # Add music interactively
@@ -138,7 +138,7 @@ python3 add_music.py list
 cat music/music_library.json
 ```
 
-## ⚠️ Important Notes
+## [WARNING] Important Notes
 
 1. **Only use royalty-free music** - YouTube Content ID will flag copyrighted music
 2. **60-90 second tracks work best** for YouTube Shorts
@@ -146,13 +146,13 @@ cat music/music_library.json
 4. **Test volume levels** - Start at 15% and adjust based on your preference
 5. **Keep files under 5MB** each for faster processing
 
-## 🎬 Video Generation With Music
+## [VIDEO] Video Generation With Music
 
 When you generate a video, you'll see logs like:
 ```
-✓ Selected: 'energetic_electronic.mp3' (score: 2/2)
-✓ Background music ready
-✓ Audio mixed
+[OK] Selected: 'energetic_electronic.mp3' (score: 2/2)
+[OK] Background music ready
+[OK] Audio mixed
 ```
 
 The music will be automatically mixed with the voiceover, playing throughout the entire video at your configured volume.

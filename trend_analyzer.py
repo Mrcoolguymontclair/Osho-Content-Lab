@@ -45,13 +45,13 @@ Consider:
 6. **Theme Alignment** - Does it fit the channel's theme?
 
 CRITICAL RULES:
-- ❌ REJECT: Medical advice, legal advice, financial advice, political controversy
-- ❌ REJECT: Topics requiring expert knowledge we don't have
-- ❌ REJECT: Negative/tragic news (deaths, disasters, etc.)
-- ❌ REJECT: Topics with no visual content (pure text/data)
-- ✅ ACCEPT: Sports, entertainment, pop culture, technology, lifestyle
-- ✅ ACCEPT: Educational, explainer, comparison, ranking topics
-- ✅ ACCEPT: Positive, uplifting, interesting content
+- [ERROR] REJECT: Medical advice, legal advice, financial advice, political controversy
+- [ERROR] REJECT: Topics requiring expert knowledge we don't have
+- [ERROR] REJECT: Negative/tragic news (deaths, disasters, etc.)
+- [ERROR] REJECT: Topics with no visual content (pure text/data)
+- [OK] ACCEPT: Sports, entertainment, pop culture, technology, lifestyle
+- [OK] ACCEPT: Educational, explainer, comparison, ranking topics
+- [OK] ACCEPT: Positive, uplifting, interesting content
 
 Output ONLY valid JSON (no markdown):
 {{
@@ -90,10 +90,10 @@ Be strict - only approve trends that will make ENGAGING, SAFE, VISUAL content.""
         return is_worthy, analysis
 
     except json.JSONDecodeError as e:
-        print(f"❌ JSON parse error in trend analysis: {e}")
+        print(f"[ERROR] JSON parse error in trend analysis: {e}")
         return False, {"error": "Invalid JSON response"}
     except Exception as e:
-        print(f"❌ Trend analysis error: {e}")
+        print(f"[ERROR] Trend analysis error: {e}")
         return False, {"error": str(e)}
 
 
@@ -111,7 +111,7 @@ def analyze_multiple_trends(trends: List[Dict], channel_theme: str, max_analyze:
     approved_trends = []
 
     for i, trend in enumerate(trends[:max_analyze]):
-        print(f"\n🔍 Analyzing trend {i+1}/{min(len(trends), max_analyze)}: {trend['topic']}")
+        print(f"\n Analyzing trend {i+1}/{min(len(trends), max_analyze)}: {trend['topic']}")
 
         is_worthy, analysis = analyze_trend_for_video(trend, channel_theme)
 
@@ -125,12 +125,12 @@ def analyze_multiple_trends(trends: List[Dict], channel_theme: str, max_analyze:
 
             confidence = analysis.get('confidence', 0)
             format_rec = analysis.get('recommended_format', 'unknown')
-            print(f"  ✅ APPROVED ({confidence}% confidence) - Format: {format_rec}")
+            print(f"  [OK] APPROVED ({confidence}% confidence) - Format: {format_rec}")
         else:
             rejection = analysis.get('rejection_reason', 'Unknown')
-            print(f"  ❌ REJECTED - {rejection}")
+            print(f"  [ERROR] REJECTED - {rejection}")
 
-    print(f"\n✅ {len(approved_trends)} out of {min(len(trends), max_analyze)} trends approved for videos")
+    print(f"\n[OK] {len(approved_trends)} out of {min(len(trends), max_analyze)} trends approved for videos")
     return approved_trends
 
 
@@ -262,12 +262,12 @@ if __name__ == "__main__":
     is_worthy, analysis = analyze_trend_for_video(sample_trend, "Sports highlights and analysis")
 
     if is_worthy:
-        print(f"✅ APPROVED FOR VIDEO")
+        print(f"[OK] APPROVED FOR VIDEO")
         print(f"Confidence: {analysis.get('confidence')}%")
         print(f"Format: {analysis.get('recommended_format')}")
         print(f"Angle: {analysis.get('suggested_video_angle')}")
     else:
-        print(f"❌ REJECTED")
+        print(f"[ERROR] REJECTED")
         print(f"Reason: {analysis.get('rejection_reason')}")
 
     print(f"\nFull Analysis:")

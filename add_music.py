@@ -31,13 +31,13 @@ def save_library(library):
     """Save library to file"""
     with open(LIBRARY_FILE, 'w') as f:
         json.dump(library, f, indent=2)
-    print(f"\n✓ Library saved to {LIBRARY_FILE}")
+    print(f"\n[OK] Library saved to {LIBRARY_FILE}")
 
 def add_music_interactive():
     """Interactive CLI to add music"""
     library = load_library()
 
-    print("\n🎵 Add Music to Library")
+    print("\n[MUSIC] Add Music to Library")
     print("=" * 50)
 
     # List existing files in music directory
@@ -99,7 +99,7 @@ def add_music_interactive():
     # Save
     save_library(library)
 
-    print("\n✓ Music added to library!")
+    print("\n[OK] Music added to library!")
     print(f"  Filename: {filename}")
     print(f"  Tags: {', '.join(tags)}")
     print(f"  Duration: {duration}s")
@@ -109,10 +109,10 @@ def list_music():
     library = load_library()
 
     if not library['music_files']:
-        print("\n📁 Music library is empty")
+        print("\n[FOLDER] Music library is empty")
         return
 
-    print(f"\n🎵 Music Library ({len(library['music_files'])} files)")
+    print(f"\n[MUSIC] Music Library ({len(library['music_files'])} files)")
     print("=" * 70)
 
     for i, music in enumerate(library['music_files'], 1):

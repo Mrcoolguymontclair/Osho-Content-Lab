@@ -138,7 +138,7 @@ def run_all_ab_experiments(channel_id: int = None):
             if thumb_results:
                 print(f"Channel {ch_id} - Thumbnail A/B: {thumb_results['recommendation']}")
         
-        print("✅ A/B experiments cycle complete")
+        print("[OK] A/B experiments cycle complete")
         
     except Exception as e:
         print(f"Error running A/B experiments: {e}")

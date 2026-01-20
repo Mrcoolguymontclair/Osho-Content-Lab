@@ -51,7 +51,7 @@ def autonomous_learning_cycle():
     5. Repeat forever
     """
 
-    print(f"🧠 Autonomous Learning System Started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f" Autonomous Learning System Started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"   Learning cycle interval: {LEARNING_CYCLE_INTERVAL / 3600:.1f} hours")
     print(f"   System will continuously improve video performance without user intervention.\n")
 
@@ -69,7 +69,7 @@ def autonomous_learning_cycle():
                 continue
 
             print(f"\n{'='*60}")
-            print(f"🔄 Starting Learning Cycle - {datetime.now().strftime('%H:%M:%S')}")
+            print(f"[REFRESH] Starting Learning Cycle - {datetime.now().strftime('%H:%M:%S')}")
             print(f"   Analyzing {len(active_channels)} active channel(s)")
             print(f"{'='*60}\n")
 
@@ -77,7 +77,7 @@ def autonomous_learning_cycle():
                 try:
                     learn_from_channel(channel)
                 except Exception as e:
-                    print(f"   ✗ Error learning from channel {channel['id']}: {e}")
+                    print(f"   [FAIL] Error learning from channel {channel['id']}: {e}")
                     continue
 
             # Calculate next cycle time
@@ -86,17 +86,17 @@ def autonomous_learning_cycle():
 
             next_cycle = datetime.now() + timedelta(seconds=sleep_time)
             print(f"\n{'='*60}")
-            print(f"✓ Learning cycle complete")
+            print(f"[OK] Learning cycle complete")
             print(f"   Next cycle: {next_cycle.strftime('%Y-%m-%d %H:%M:%S')}")
             print(f"{'='*60}\n")
 
             time.sleep(sleep_time)
 
         except KeyboardInterrupt:
-            print("\n🛑 Autonomous learning stopped by user")
+            print("\n[STOP] Autonomous learning stopped by user")
             break
         except Exception as e:
-            print(f"\n✗ Learning cycle error: {e}")
+            print(f"\n[FAIL] Learning cycle error: {e}")
             import traceback
             traceback.print_exc()
             time.sleep(300)  # Wait 5 minutes before retrying
@@ -116,7 +116,7 @@ def learn_from_channel(channel: Dict):
     channel_id = channel['id']
     channel_name = channel.get('name', f'Channel {channel_id}')
 
-    print(f"\n   📊 Analyzing: {channel_name}")
+    print(f"\n   [CHART] Analyzing: {channel_name}")
 
     # Step 1: Fetch latest analytics
     print(f"      → Fetching latest YouTube analytics...")
@@ -131,7 +131,7 @@ def learn_from_channel(channel: Dict):
     try:
         stats_updated = update_all_video_stats(channel_id)
         if stats_updated > 0:
-            print(f"      ✓ Updated stats for {stats_updated} video(s)")
+            print(f"      [OK] Updated stats for {stats_updated} video(s)")
     except Exception as e:
         print(f"      ℹ Could not update stats: {e}")
 
@@ -141,13 +141,13 @@ def learn_from_channel(channel: Dict):
     trends = analyze_channel_trends(channel_id, limit=ANALYSIS_WINDOW)
 
     if not trends:
-        print(f"      ✗ Pattern analysis failed")
+        print(f"      [FAIL] Pattern analysis failed")
         return
 
     # Display key insights (for developer monitoring only)
     success_patterns = trends.get('successful_patterns', [])
     if success_patterns:
-        print(f"      ✓ Found {len(success_patterns)} success pattern(s):")
+        print(f"      [OK] Found {len(success_patterns)} success pattern(s):")
         for pattern in success_patterns[:2]:
             print(f"        • {pattern}")
 
@@ -157,13 +157,13 @@ def learn_from_channel(channel: Dict):
     strategy = generate_content_strategy(channel_id)
 
     if not strategy:
-        print(f"      ✗ Strategy generation failed")
+        print(f"      [FAIL] Strategy generation failed")
         return
 
     recommended = strategy.get('recommended_topics', [])
     confidence = strategy.get('confidence_score', 0.0)
 
-    print(f"      ✓ Strategy generated (confidence: {confidence:.0%})")
+    print(f"      [OK] Strategy generated (confidence: {confidence:.0%})")
     print(f"        Next video will use: {recommended[0] if recommended else 'default'}")
 
     # Step 4: Strategy is auto-saved to DB by generate_content_strategy()
@@ -176,7 +176,7 @@ def learn_from_channel(channel: Dict):
         f"Autonomous learning: {len(success_patterns)} patterns → {len(recommended)} optimized topics"
     )
 
-    print(f"      ✓ Learning complete - improvements active for next video")
+    print(f"      [OK] Learning complete - improvements active for next video")
 
 
 # ==============================================================================

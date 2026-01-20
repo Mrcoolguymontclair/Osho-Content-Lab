@@ -452,7 +452,7 @@ if __name__ == "__main__":
 
     # Initialize database
     init_trends_table()
-    print("✅ Trends table initialized\n")
+    print("[OK] Trends table initialized\n")
 
     # Test saving a trend
     sample_trend = {
@@ -464,7 +464,7 @@ if __name__ == "__main__":
     }
 
     trend_id = save_trend(sample_trend)
-    print(f"✅ Saved trend with ID: {trend_id}\n")
+    print(f"[OK] Saved trend with ID: {trend_id}\n")
 
     # Test analysis update
     sample_analysis = {
@@ -475,7 +475,7 @@ if __name__ == "__main__":
     }
 
     update_trend_analysis(trend_id, sample_analysis, is_approved=True)
-    print(f"✅ Updated trend {trend_id} with analysis\n")
+    print(f"[OK] Updated trend {trend_id} with analysis\n")
 
     # Test retrieval
     retrieved = get_trend_by_id(trend_id)
@@ -491,4 +491,4 @@ if __name__ == "__main__":
     print(f"  Approved: {stats['approved_trends']}")
     print(f"  Pending generation: {stats['pending_generation']}\n")
 
-    print("✅ All tests passed!")
+    print("[OK] All tests passed!")

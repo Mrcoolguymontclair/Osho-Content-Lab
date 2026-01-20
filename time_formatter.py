@@ -201,20 +201,20 @@ def format_relative_time(dt: datetime) -> str:
 # Testing
 if __name__ == "__main__":
     print("=" * 70)
-    print("⏰ TIME FORMATTER TEST")
+    print("[TIME] TIME FORMATTER TEST")
     print("=" * 70)
 
-    print(f"\n📅 Current time (Chicago): {format_time_chicago()}")
-    print(f"📅 Full format: {format_time_chicago(format_type='full')}")
-    print(f"📅 Time only: {format_time_chicago(format_type='time_only')}")
-    print(f"📅 Log format: {format_log_timestamp()}")
+    print(f"\n Current time (Chicago): {format_time_chicago()}")
+    print(f" Full format: {format_time_chicago(format_type='full')}")
+    print(f" Time only: {format_time_chicago(format_type='time_only')}")
+    print(f" Log format: {format_log_timestamp()}")
 
-    print(f"\n⏱️  Duration examples:")
+    print(f"\n⏱  Duration examples:")
     print(f"   45 seconds: {format_duration(45)}")
     print(f"   90 seconds: {format_duration(90)}")
     print(f"   3665 seconds: {format_duration(3665)}")
 
-    print(f"\n🔮 Time until examples:")
+    print(f"\n Time until examples:")
     future = now_chicago() + timedelta(minutes=45)
     print(f"   Next video: {format_time_until(future)}")
     print(f"   Next video (short): {format_time_until(future, short=True)}")
@@ -222,10 +222,10 @@ if __name__ == "__main__":
     past = now_chicago() - timedelta(hours=2)
     print(f"   Overdue: {format_time_until(past)}")
 
-    print(f"\n📝 Relative time examples:")
+    print(f"\n[NOTE] Relative time examples:")
     print(f"   2 hours ago: {format_relative_time(now_chicago() - timedelta(hours=2))}")
     print(f"   5 minutes ago: {format_relative_time(now_chicago() - timedelta(minutes=5))}")
     print(f"   Yesterday: {format_relative_time(now_chicago() - timedelta(days=1))}")
 
-    print("\n✅ All time formatting functions working!")
+    print("\n[OK] All time formatting functions working!")
     print("=" * 70)

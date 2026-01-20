@@ -38,7 +38,7 @@ def get_music_for_mood(mood_tags: List[str] = None) -> Optional[str]:
     music_files = library.get('music_files', [])
 
     if not music_files:
-        print("⚠️ No music files in library")
+        print("[WARNING] No music files in library")
         return None
 
     if not mood_tags:
@@ -49,7 +49,7 @@ def get_music_for_mood(mood_tags: List[str] = None) -> Optional[str]:
         if os.path.exists(music_path):
             return music_path
         else:
-            print(f"⚠️ Music file not found: {music_path}")
+            print(f"[WARNING] Music file not found: {music_path}")
             return None
 
     # Score each music file by tag matches
@@ -76,15 +76,15 @@ def get_music_for_mood(mood_tags: List[str] = None) -> Optional[str]:
     music_path = os.path.join(MUSIC_DIR, music['filename'])
 
     if os.path.exists(music_path):
-        print(f"  🎵 Selected music: {music['filename']}")
+        print(f"  [MUSIC] Selected music: {music['filename']}")
         return music_path
     else:
-        print(f"⚠️ Music file not found: {music_path}")
+        print(f"[WARNING] Music file not found: {music_path}")
         # Try to find any working music file
         for m in music_files:
             fallback_path = os.path.join(MUSIC_DIR, m['filename'])
             if os.path.exists(fallback_path):
-                print(f"  🎵 Using fallback: {m['filename']}")
+                print(f"  [MUSIC] Using fallback: {m['filename']}")
                 return fallback_path
 
     return None
@@ -140,7 +140,7 @@ def trim_music_to_duration(music_path: str, duration: float, output_path: str) -
         return result.returncode == 0
 
     except Exception as e:
-        print(f"❌ Music trim error: {e}")
+        print(f"[ERROR] Music trim error: {e}")
         return False
 
 
@@ -175,7 +175,7 @@ def mix_audio_with_music(voiceover_path: str, music_path: str, output_path: str,
         return result.returncode == 0
 
     except Exception as e:
-        print(f"❌ Audio mixing error: {e}")
+        print(f"[ERROR] Audio mixing error: {e}")
         return False
 
 
@@ -209,7 +209,7 @@ def add_music_to_video(video_path: str, music_path: str, output_path: str,
         temp_music = tempfile.NamedTemporaryFile(suffix='.aac', delete=False).name
 
         if not trim_music_to_duration(music_path, video_duration, temp_music):
-            print("⚠️ Failed to trim music, continuing without music")
+            print("[WARNING] Failed to trim music, continuing without music")
             return False
 
         # Mix video audio with music
@@ -237,7 +237,7 @@ def add_music_to_video(video_path: str, music_path: str, output_path: str,
         return result.returncode == 0
 
     except Exception as e:
-        print(f"❌ Add music error: {e}")
+        print(f"[ERROR] Add music error: {e}")
         return False
 
 
@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
     # Test 1: Load library
     library = load_music_library()
-    print(f"✅ Loaded {len(library.get('music_files', []))} music files\n")
+    print(f"[OK] Loaded {len(library.get('music_files', []))} music files\n")
 
     # Test 2: Get music for different moods
     test_moods = [
@@ -261,9 +261,9 @@ if __name__ == "__main__":
         print(f"Test: {description}")
         music_path = get_music_for_mood(mood_tags)
         if music_path:
-            print(f"  ✅ Found: {os.path.basename(music_path)}")
+            print(f"  [OK] Found: {os.path.basename(music_path)}")
         else:
-            print(f"  ❌ No music found")
+            print(f"  [ERROR] No music found")
         print()
 
     # Test 3: Get default moods for video types
@@ -272,4 +272,4 @@ if __name__ == "__main__":
         moods = get_default_music_for_video_type(video_type)
         print(f"  {video_type}: {', '.join(moods)}")
 
-    print("\n✅ All tests complete!")
+    print("\n[OK] All tests complete!")

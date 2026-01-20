@@ -46,45 +46,45 @@ def run_analytics_cycle(channel_id: int, auto_apply_settings: bool = True) -> bo
 
         channel_name = channel['name']
 
-        add_log(channel_id, "info", "analytics", "🔄 Starting analytics cycle...")
+        add_log(channel_id, "info", "analytics", "[REFRESH] Starting analytics cycle...")
 
         # Step 1: Update video stats from YouTube
         updated_count = update_all_video_stats(channel_id)
-        add_log(channel_id, "info", "analytics", f"📊 Updated stats for {updated_count} videos")
+        add_log(channel_id, "info", "analytics", f"[CHART] Updated stats for {updated_count} videos")
 
         # Step 2: Analyze trends if we have enough data
         trends = analyze_channel_trends(channel_id, limit=30)
 
         if trends:
-            add_log(channel_id, "info", "analytics", f"🧠 AI identified {len(trends.get('successful_patterns', []))} success patterns")
+            add_log(channel_id, "info", "analytics", f" AI identified {len(trends.get('successful_patterns', []))} success patterns")
         else:
-            add_log(channel_id, "warning", "analytics", "⚠️ Not enough data for trend analysis yet")
+            add_log(channel_id, "warning", "analytics", "[WARNING] Not enough data for trend analysis yet")
 
         # Step 3: Generate new content strategy (includes posting interval optimization)
         strategy = generate_content_strategy(channel_id)
 
         if strategy:
             confidence = strategy.get('confidence_score', 0) * 100
-            add_log(channel_id, "info", "analytics", f"✅ Generated new strategy (confidence: {confidence:.0f}%)")
+            add_log(channel_id, "info", "analytics", f"[OK] Generated new strategy (confidence: {confidence:.0f}%)")
 
             # Step 4: Apply AI recommendations
             if auto_apply_settings:
                 applied = apply_ai_recommendations(channel_id, auto_apply=True)
                 if applied:
-                    add_log(channel_id, "info", "analytics", "🤖 AI recommendations auto-applied")
+                    add_log(channel_id, "info", "analytics", " AI recommendations auto-applied")
                 else:
-                    add_log(channel_id, "info", "analytics", "📋 AI recommendations logged (not auto-applied)")
+                    add_log(channel_id, "info", "analytics", " AI recommendations logged (not auto-applied)")
             else:
                 apply_ai_recommendations(channel_id, auto_apply=False)
         else:
-            add_log(channel_id, "warning", "analytics", "⚠️ Could not generate strategy")
+            add_log(channel_id, "warning", "analytics", "[WARNING] Could not generate strategy")
 
-        add_log(channel_id, "info", "analytics", "✅ Analytics cycle complete")
+        add_log(channel_id, "info", "analytics", "[OK] Analytics cycle complete")
 
         return True
 
     except Exception as e:
-        add_log(channel_id, "error", "analytics", f"❌ Analytics cycle failed: {str(e)}")
+        add_log(channel_id, "error", "analytics", f"[ERROR] Analytics cycle failed: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -113,9 +113,9 @@ def run_all_channels_analytics() -> int:
 
             if run_analytics_cycle(channel['id']):
                 success_count += 1
-                print(f"✅ Success: {channel['name']}")
+                print(f"[OK] Success: {channel['name']}")
             else:
-                print(f"❌ Failed: {channel['name']}")
+                print(f"[ERROR] Failed: {channel['name']}")
 
             # Rate limiting
             time.sleep(2)
@@ -146,7 +146,7 @@ def analytics_worker_24h(daemon_running_flag):
         daemon_running_flag: Function that returns True if daemon should keep running
     """
     print("\n" + "="*60)
-    print("📊 ANALYTICS WORKER STARTED")
+    print("[CHART] ANALYTICS WORKER STARTED")
     print("="*60)
     print("Schedule: Every 24 hours")
     print("Next run: In 24 hours")
@@ -166,7 +166,7 @@ def analytics_worker_24h(daemon_running_flag):
 
             if time_since_last >= timedelta(hours=24):
                 print(f"\n{'='*60}")
-                print(f"⏰ 24-hour analytics cycle triggered")
+                print(f"[TIME] 24-hour analytics cycle triggered")
                 print(f"Time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
                 print(f"{'='*60}\n")
 
@@ -183,7 +183,7 @@ def analytics_worker_24h(daemon_running_flag):
             traceback.print_exc()
             time.sleep(3600)  # Wait an hour before retry
 
-    print("\n📊 Analytics worker stopped")
+    print("\n[CHART] Analytics worker stopped")
 
 
 def analytics_worker_on_post(channel_id: int):
@@ -195,18 +195,18 @@ def analytics_worker_on_post(channel_id: int):
     """
     try:
         # Wait 5 minutes for YouTube to process
-        print(f"⏳ Waiting 5 minutes for YouTube to process video...")
+        print(f"[WAIT] Waiting 5 minutes for YouTube to process video...")
         time.sleep(300)
 
         # Update stats for this channel
-        print(f"📊 Fetching initial stats...")
+        print(f"[CHART] Fetching initial stats...")
         updated_count = update_all_video_stats(channel_id)
 
         if updated_count > 0:
-            add_log(channel_id, "info", "analytics", f"📊 Fetched initial stats for new video")
-            print(f"✅ Initial stats fetched")
+            add_log(channel_id, "info", "analytics", f"[CHART] Fetched initial stats for new video")
+            print(f"[OK] Initial stats fetched")
         else:
-            print(f"⚠️ Could not fetch initial stats")
+            print(f"[WARNING] Could not fetch initial stats")
 
     except Exception as e:
         print(f"Error in post-upload analytics: {e}")
@@ -289,13 +289,13 @@ def get_analytics_summary(channel_id: int) -> dict:
             older_avg = sum(v.get('views', 0) for v in older_5) / 5
 
             if recent_avg > older_avg * 1.2:
-                growth_trend = "📈 Growing (+20%+)"
+                growth_trend = "[TRENDING] Growing (+20%+)"
             elif recent_avg < older_avg * 0.8:
-                growth_trend = "📉 Declining (-20%+)"
+                growth_trend = "[DOWN] Declining (-20%+)"
             else:
-                growth_trend = "➡️ Stable"
+                growth_trend = " Stable"
         else:
-            growth_trend = "📊 Building data..."
+            growth_trend = "[CHART] Building data..."
 
         return {
             'total_videos': len(posted),

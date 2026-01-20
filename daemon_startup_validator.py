@@ -51,25 +51,25 @@ def validate_all_imports():
                     missing.append(func)
 
             if missing:
-                print(f"❌ {module_name}: Missing {', '.join(missing)}")
+                print(f"[ERROR] {module_name}: Missing {', '.join(missing)}")
                 all_passed = False
             else:
-                print(f"✅ {module_name}")
+                print(f"[OK] {module_name}")
 
         except ImportError as e:
-            print(f"❌ {module_name}: Import failed - {e}")
+            print(f"[ERROR] {module_name}: Import failed - {e}")
             all_passed = False
         except Exception as e:
-            print(f"❌ {module_name}: Error - {e}")
+            print(f"[ERROR] {module_name}: Error - {e}")
             all_passed = False
 
     print("=" * 70)
 
     if all_passed:
-        print("✅ ALL DEPENDENCIES VALIDATED - SAFE TO START DAEMON")
+        print("[OK] ALL DEPENDENCIES VALIDATED - SAFE TO START DAEMON")
         return True
     else:
-        print("❌ VALIDATION FAILED - FIX ERRORS BEFORE STARTING DAEMON")
+        print("[ERROR] VALIDATION FAILED - FIX ERRORS BEFORE STARTING DAEMON")
         return False
 
 if __name__ == "__main__":

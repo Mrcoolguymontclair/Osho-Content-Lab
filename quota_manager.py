@@ -142,7 +142,7 @@ def mark_quota_exhausted(api_name: str, db_path: str = 'channels.db'):
     conn.commit()
     conn.close()
 
-    print(f"⚠️ {api_name.upper()} quota exhausted at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"[WARNING] {api_name.upper()} quota exhausted at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"   Will auto-resume at next quota reset (midnight)")
 
 
@@ -203,7 +203,7 @@ def reset_quota(api_name: str, db_path: str = 'channels.db'):
     conn.commit()
     conn.close()
 
-    print(f"✅ {api_name.upper()} quota reset at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"[OK] {api_name.upper()} quota reset at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 def reset_all_quotas(db_path: str = 'channels.db'):
@@ -216,7 +216,7 @@ def reset_all_quotas(db_path: str = 'channels.db'):
     for api_name in ['groq', 'youtube', 'pexels']:
         reset_quota(api_name, db_path)
 
-    print(f"✅ All quotas reset at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"[OK] All quotas reset at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 def check_and_reset_if_needed(db_path: str = 'channels.db') -> bool:
@@ -239,7 +239,7 @@ def check_and_reset_if_needed(db_path: str = 'channels.db') -> bool:
     conn.close()
 
     if rows:
-        print(f"\n🔄 Quota reset time reached!")
+        print(f"\n[REFRESH] Quota reset time reached!")
         reset_all_quotas(db_path)
         return True
 
@@ -307,7 +307,7 @@ def auto_resume_paused_channels(db_path: str = 'channels.db'):
     channels = cursor.fetchall()
 
     if channels:
-        print(f"\n🔄 Quota reset detected - resuming {len(channels)} paused channel(s)...")
+        print(f"\n[REFRESH] Quota reset detected - resuming {len(channels)} paused channel(s)...")
 
         for channel in channels:
             cursor.execute("""
@@ -322,7 +322,7 @@ def auto_resume_paused_channels(db_path: str = 'channels.db'):
                 VALUES (?, 'info', 'auto_resume', 'Channel auto-resumed after quota reset')
             """, (channel['id'],))
 
-            print(f"   ✅ Resumed: {channel['name']}")
+            print(f"   [OK] Resumed: {channel['name']}")
 
     conn.commit()
     conn.close()
@@ -337,7 +337,7 @@ def monitor_quota_worker(check_interval_minutes: int = 60):
     """
     import time
 
-    print(f"\n🔍 Starting quota monitor (checks every {check_interval_minutes} minutes)...")
+    print(f"\n Starting quota monitor (checks every {check_interval_minutes} minutes)...")
 
     while True:
         try:
@@ -350,10 +350,10 @@ def monitor_quota_worker(check_interval_minutes: int = 60):
             time.sleep(check_interval_minutes * 60)
 
         except KeyboardInterrupt:
-            print("\n⏹️ Quota monitor stopped")
+            print("\n⏹ Quota monitor stopped")
             break
         except Exception as e:
-            print(f"⚠️ Quota monitor error: {e}")
+            print(f"[WARNING] Quota monitor error: {e}")
             time.sleep(60)
 
 
@@ -363,18 +363,18 @@ if __name__ == "__main__":
 
     # Initialize database
     init_quota_table()
-    print("✅ Quota table initialized\n")
+    print("[OK] Quota table initialized\n")
 
     # Check all quotas
     status = get_quota_status_summary()
     print("Current Quota Status:")
-    print(f"  Groq: {'✅ Available' if status['groq']['available'] else '❌ Exhausted'}")
+    print(f"  Groq: {'[OK] Available' if status['groq']['available'] else '[ERROR] Exhausted'}")
     print(f"    Remaining: {status['groq']['remaining']:,} / {status['groq']['limit']:,}")
-    print(f"  YouTube: {'✅ Available' if status['youtube']['available'] else '❌ Exhausted'}")
+    print(f"  YouTube: {'[OK] Available' if status['youtube']['available'] else '[ERROR] Exhausted'}")
     print(f"    Remaining: {status['youtube']['remaining']:,} / {status['youtube']['limit']:,}")
-    print(f"  Pexels: {'✅ Available' if status['pexels']['available'] else '❌ Exhausted'}")
+    print(f"  Pexels: {'[OK] Available' if status['pexels']['available'] else '[ERROR] Exhausted'}")
     print(f"    Remaining: {status['pexels']['remaining']:,} / {status['pexels']['limit']:,}")
-    print(f"\n  Can operate: {'✅ YES' if status['can_operate'] else '❌ NO'}")
+    print(f"\n  Can operate: {'[OK] YES' if status['can_operate'] else '[ERROR] NO'}")
     print()
 
     # Test marking quota exhausted
@@ -395,4 +395,4 @@ if __name__ == "__main__":
     print(f"  Remaining: {status['remaining']:,}")
     print()
 
-    print("✅ All tests passed!")
+    print("[OK] All tests passed!")

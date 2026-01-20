@@ -5,7 +5,7 @@ High-quality thumbnails are critical for maximizing click-through rate (CTR) and
 
 ---
 
-## Core Principles ✅
+## Core Principles [OK]
 
 1. **High Contrast** — Bright colors on dark backgrounds (or vice versa). Readability at thumbnail size (1280×720) is crucial.
 2. **Bold, Large Text** — 3–5 words max. Use 72pt+ font size.
@@ -18,12 +18,12 @@ High-quality thumbnails are critical for maximizing click-through rate (CTR) and
 
 ## Recommended Design Patterns
 
-### Pattern A: Number + Text (Best for Rankings/Lists) 🔢
+### Pattern A: Number + Text (Best for Rankings/Lists) 
 ```
 - Large number "5" or "1" in corner (yellow, 150pt+)
 - Below: Short shocking text "UNBELIEVABLE" (white, Impact font, 80pt)
 - Background: Dark (black or dark blue)
-- Emoji: 😱 or 🔥 in opposite corner
+- Emoji:  or [HOT] in opposite corner
 - Example: "5 | UNBELIEVABLE FACTS" in yellow, white on black
 ```
 
@@ -31,25 +31,25 @@ High-quality thumbnails are critical for maximizing click-through rate (CTR) and
 **Tools:** Canva (free tier), GIMP, Photoshop, or macOS Preview.  
 **Success Metric:** +12–40% CTR lift vs. auto-thumbnail.
 
-### Pattern B: Close-Up Face + One-Liner (Best for Personality Content) 😮
+### Pattern B: Close-Up Face + One-Liner (Best for Personality Content) 
 ```
 - Subject (face, object, or action) centered and large (70% of thumbnail)
 - One-line text at bottom: "YOU WON'T BELIEVE THIS" (white, 60pt)
 - High saturation background (bright color or blur)
 - Emoji on face or corner
-- Example: Shocked face + "WOW" + 😮
+- Example: Shocked face + "WOW" + 
 ```
 
 **File:** Export as PNG.  
 **Use Case:** Vlogs, reaction videos, curiosity hooks.  
 **Success Metric:** +15–50% CTR on personality content.
 
-### Pattern C: Text-Heavy (Best for Shorts with Keywords) 📝
+### Pattern C: Text-Heavy (Best for Shorts with Keywords) [NOTE]
 ```
 - Main text (3–5 words) in largest font (100pt+): "TOP 5 SHOCKING"
 - Sub-text (one word): "FACTS" (60pt)
 - Color: High-contrast text (yellow/red) on dark background
-- Emoji: 🔥 or ⚡
+- Emoji: [HOT] or 
 - Grid or dividers if listing numbers
 - Example: "TOP | 5 | SHOCKING | FACTS" with dividers
 ```
@@ -128,7 +128,7 @@ ffmpeg -i input_video.mp4 -ss 00:00:05.000 -vframes 1 -vf scale=1280:720 thumb.p
 
 ## Quick Wins (5–10 min per thumbnail)
 
-1. **Yellow Text + Black Background**: "5 SHOCKING FACTS" + 🔥
+1. **Yellow Text + Black Background**: "5 SHOCKING FACTS" + [HOT]
 2. **Big Number + One Word**: "1" + "INSANE" + shocked emoji
 3. **Brand Logo / Text + Subject**: "YourChannelName" + trending topic text
 4. **Grid Layout**: "FACTS" with 5 boxes, each with a number (1–5)
@@ -159,7 +159,7 @@ success, error = generate_thumbnail(
 
 ### Ranking Videos (e.g., "Top 5")
 ```
-Thumbnail: "5" (large, yellow) | "SHOCKING" (white) | 🔥
+Thumbnail: "5" (large, yellow) | "SHOCKING" (white) | [HOT]
 Font: Impact, 100pt
 Background: Dark with hint of action from clip
 ```

@@ -140,7 +140,7 @@ def get_best_snippet(
         with open(temp_wav, 'wb') as f:
             f.write(audio_data)
 
-        print(f"✓ Snippet received from API")
+        print(f"[OK] Snippet received from API")
 
         # Convert WAV to MP3 if output format is MP3
         if output_file.endswith('.mp3'):
@@ -166,7 +166,7 @@ def get_best_snippet(
 
         # Get snippet info
         snippet_duration = result.get('data', {}).get('snippet_duration', duration)
-        print(f"✓ Snippet saved: {snippet_duration}s, saved to: {output_file}")
+        print(f"[OK] Snippet saved: {snippet_duration}s, saved to: {output_file}")
 
         return True, output_file, None
 
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     success, output, error = extract_music_snippet(audio_file, duration)
 
     if success:
-        print(f"\n✓ Success! Snippet saved to: {output}")
+        print(f"\n[OK] Success! Snippet saved to: {output}")
     else:
-        print(f"\n✗ Failed: {error}")
+        print(f"\n[FAIL] Failed: {error}")
         sys.exit(1)

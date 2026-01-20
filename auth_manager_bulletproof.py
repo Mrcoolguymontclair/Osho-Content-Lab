@@ -82,7 +82,7 @@ def save_credentials(creds: Credentials, token_path: str, backup: bool = True):
         # CRITICAL: Preserve refresh token if it exists anywhere
         if not creds_data.get('refresh_token') and existing_refresh:
             creds_data['refresh_token'] = existing_refresh
-            print(f"✅ Preserved refresh token from existing credentials")
+            print(f"[OK] Preserved refresh token from existing credentials")
 
         # Add metadata
         creds_data['_last_saved'] = datetime.now().isoformat()
@@ -98,13 +98,13 @@ def save_credentials(creds: Credentials, token_path: str, backup: bool = True):
         if backup:
             backup_path = get_backup_token_path(os.path.basename(token_path).replace('channel_', '').replace('.json', ''))
             shutil.copy2(token_path, backup_path)
-            print(f"✅ Backup saved to {backup_path}")
+            print(f"[OK] Backup saved to {backup_path}")
 
-        print(f"✅ Credentials saved successfully (refresh #{creds_data['_refresh_count']})")
+        print(f"[OK] Credentials saved successfully (refresh #{creds_data['_refresh_count']})")
         return True
 
     except Exception as e:
-        print(f"❌ Failed to save credentials: {e}")
+        print(f"[ERROR] Failed to save credentials: {e}")
         # Don't delete anything on failure!
         return False
 
@@ -126,10 +126,10 @@ def load_credentials(channel_name: str, try_backup: bool = True) -> Optional[Cre
         try:
             creds = Credentials.from_authorized_user_file(token_path, SCOPES)
             if creds:
-                print(f"✅ Loaded credentials from {token_path}")
+                print(f"[OK] Loaded credentials from {token_path}")
                 return creds
         except Exception as e:
-            print(f"⚠️ Failed to load main token: {e}")
+            print(f"[WARNING] Failed to load main token: {e}")
 
     # Try backup token
     if try_backup:
@@ -138,12 +138,12 @@ def load_credentials(channel_name: str, try_backup: bool = True) -> Optional[Cre
             try:
                 creds = Credentials.from_authorized_user_file(backup_path, SCOPES)
                 if creds:
-                    print(f"✅ Loaded credentials from BACKUP: {backup_path}")
+                    print(f"[OK] Loaded credentials from BACKUP: {backup_path}")
                     # Restore from backup
                     save_credentials(creds, token_path, backup=False)
                     return creds
             except Exception as e:
-                print(f"⚠️ Failed to load backup token: {e}")
+                print(f"[WARNING] Failed to load backup token: {e}")
 
     return None
 
@@ -161,9 +161,9 @@ def refresh_token_with_retry(creds: Credentials, channel_name: str, max_attempts
     """
     for attempt in range(1, max_attempts + 1):
         try:
-            print(f"🔄 Refreshing token for {channel_name} (attempt {attempt}/{max_attempts})...")
+            print(f"[REFRESH] Refreshing token for {channel_name} (attempt {attempt}/{max_attempts})...")
             creds.refresh(Request())
-            print(f"✅ Token refreshed successfully on attempt {attempt}")
+            print(f"[OK] Token refreshed successfully on attempt {attempt}")
 
             # Save immediately after successful refresh
             token_path = get_token_path(channel_name)
@@ -172,15 +172,15 @@ def refresh_token_with_retry(creds: Credentials, channel_name: str, max_attempts
             return True
 
         except Exception as e:
-            print(f"⚠️ Refresh attempt {attempt} failed: {e}")
+            print(f"[WARNING] Refresh attempt {attempt} failed: {e}")
 
             if attempt < max_attempts:
                 # Exponential backoff: 2s, 4s, 8s, 16s, 32s
                 wait_time = 2 ** attempt
-                print(f"⏳ Waiting {wait_time}s before retry...")
+                print(f"[WAIT] Waiting {wait_time}s before retry...")
                 time.sleep(wait_time)
             else:
-                print(f"❌ All {max_attempts} refresh attempts failed")
+                print(f"[ERROR] All {max_attempts} refresh attempts failed")
                 return False
 
     return False
@@ -202,16 +202,16 @@ def get_valid_credentials(channel_name: str, auto_refresh: bool = True) -> Optio
     creds = load_credentials(channel_name)
 
     if not creds:
-        print(f"❌ No credentials found for {channel_name}")
+        print(f"[ERROR] No credentials found for {channel_name}")
         return None
 
     # Check if already valid
     if creds.valid:
-        # Check if expiring soon (within 1 hour)
+        # Check if expiring soon (within 12 hours for maximum longevity)
         if hasattr(creds, 'expiry') and creds.expiry:
             time_until_expiry = (creds.expiry - datetime.utcnow()).total_seconds()
-            if time_until_expiry < 3600:  # Less than 1 hour
-                print(f"⚠️ Token expires in {time_until_expiry/60:.1f} minutes - proactive refresh")
+            if time_until_expiry < 43200:  # Less than 12 hours (extended from 1 hour)
+                print(f"[WARNING] Token expires in {time_until_expiry/3600:.1f} hours - proactive refresh")
                 if auto_refresh and creds.refresh_token:
                     refresh_token_with_retry(creds, channel_name)
                     creds = load_credentials(channel_name, try_backup=False)  # Reload after refresh
@@ -220,14 +220,14 @@ def get_valid_credentials(channel_name: str, auto_refresh: bool = True) -> Optio
 
     # Token expired - refresh it
     if auto_refresh and creds.refresh_token:
-        print(f"⚠️ Token expired - attempting refresh...")
+        print(f"[WARNING] Token expired - attempting refresh...")
         if refresh_token_with_retry(creds, channel_name):
             # Reload refreshed credentials
             creds = load_credentials(channel_name, try_backup=False)
             if creds and creds.valid:
                 return creds
 
-    print(f"❌ Could not get valid credentials for {channel_name}")
+    print(f"[ERROR] Could not get valid credentials for {channel_name}")
     return None
 
 # ==============================================================================
@@ -237,11 +237,11 @@ def get_valid_credentials(channel_name: str, auto_refresh: bool = True) -> Optio
 def auto_refresh_worker():
     """
     Background worker that refreshes all tokens proactively.
-    Runs every 30 minutes and refreshes tokens that expire within 2 hours.
+    Runs every 15 minutes and refreshes tokens that expire within 24 hours.
     """
     global _refresh_running
 
-    print("🔄 Auto-refresh worker started (checks every 30 minutes)")
+    print("[REFRESH] Auto-refresh worker started (checks every 15 minutes)")
 
     while _refresh_running:
         try:
@@ -263,12 +263,12 @@ def auto_refresh_worker():
                     needs_refresh = False
 
                     if not creds.valid:
-                        print(f"⚠️ {channel_name}: Token expired - needs refresh")
+                        print(f"[WARNING] {channel_name}: Token expired - needs refresh")
                         needs_refresh = True
                     elif hasattr(creds, 'expiry') and creds.expiry:
                         time_until_expiry = (creds.expiry - datetime.utcnow()).total_seconds()
-                        if time_until_expiry < 7200:  # Less than 2 hours
-                            print(f"⚠️ {channel_name}: Token expires in {time_until_expiry/60:.1f}m - proactive refresh")
+                        if time_until_expiry < 86400:  # Less than 24 hours (extended from 2 hours)
+                            print(f"[WARNING] {channel_name}: Token expires in {time_until_expiry/3600:.1f}h - proactive refresh")
                             needs_refresh = True
 
                     # Refresh if needed
@@ -277,31 +277,31 @@ def auto_refresh_worker():
                             refresh_token_with_retry(creds, channel_name)
 
                 except Exception as e:
-                    print(f"⚠️ Error checking {token_file}: {e}")
+                    print(f"[WARNING] Error checking {token_file}: {e}")
 
         except Exception as e:
-            print(f"⚠️ Auto-refresh worker error: {e}")
+            print(f"[WARNING] Auto-refresh worker error: {e}")
 
-        # Wait 30 minutes
-        for _ in range(1800):  # 30 minutes in seconds
+        # Wait 15 minutes (reduced from 30 for more frequent checks)
+        for _ in range(900):  # 15 minutes in seconds
             if not _refresh_running:
                 break
             time.sleep(1)
 
-    print("🛑 Auto-refresh worker stopped")
+    print("[STOP] Auto-refresh worker stopped")
 
 def start_auto_refresh():
     """Start background auto-refresh worker"""
     global _refresh_thread, _refresh_running
 
     if _refresh_running:
-        print("⚠️ Auto-refresh already running")
+        print("[WARNING] Auto-refresh already running")
         return
 
     _refresh_running = True
     _refresh_thread = threading.Thread(target=auto_refresh_worker, daemon=True)
     _refresh_thread.start()
-    print("✅ Auto-refresh started")
+    print("[OK] Auto-refresh started")
 
 def stop_auto_refresh():
     """Stop background auto-refresh worker"""
@@ -310,7 +310,7 @@ def stop_auto_refresh():
     _refresh_running = False
     if _refresh_thread:
         _refresh_thread.join(timeout=5)
-    print("✅ Auto-refresh stopped")
+    print("[OK] Auto-refresh stopped")
 
 # ==============================================================================
 # Authentication Flow
@@ -330,7 +330,7 @@ def authenticate_channel(channel_name: str, client_secret: str = None) -> Tuple[
     # Check if already authenticated
     creds = get_valid_credentials(channel_name)
     if creds:
-        return True, f"✅ {channel_name} is already authenticated!"
+        return True, f"[OK] {channel_name} is already authenticated!"
 
     # Need to authenticate
     if not client_secret:
@@ -372,13 +372,13 @@ def authenticate_channel(channel_name: str, client_secret: str = None) -> Tuple[
 
         # Verify we got a refresh token
         if not creds.refresh_token:
-            return False, "❌ No refresh token received! Try revoking app access at myaccount.google.com/permissions and re-authenticating."
+            return False, "[ERROR] No refresh token received! Try revoking app access at myaccount.google.com/permissions and re-authenticating."
 
         # Save credentials
         token_path = get_token_path(channel_name)
         if save_credentials(creds, token_path):
-            print(f"✅ {channel_name} authenticated with refresh token!")
-            return True, f"✅ {channel_name} authenticated successfully!"
+            print(f"[OK] {channel_name} authenticated with refresh token!")
+            return True, f"[OK] {channel_name} authenticated successfully!"
         else:
             return False, "Failed to save credentials"
 
@@ -403,7 +403,7 @@ def get_youtube_service(channel_name: str):
     try:
         return build('youtube', 'v3', credentials=creds)
     except Exception as e:
-        print(f"❌ Error building YouTube service: {e}")
+        print(f"[ERROR] Error building YouTube service: {e}")
         return None
 
 def get_channel_info(channel_name: str) -> Optional[Dict]:
@@ -426,7 +426,7 @@ def get_channel_info(channel_name: str) -> Optional[Dict]:
                 'videos': channel['statistics'].get('videoCount', '0')
             }
     except Exception as e:
-        print(f"❌ Error getting channel info: {e}")
+        print(f"[ERROR] Error getting channel info: {e}")
 
     return None
 
@@ -445,30 +445,30 @@ def test_all_channels():
     for token_file in token_files:
         channel_name = token_file.replace('channel_', '').replace('.json', '').replace('_', ' ')
 
-        print(f"\n📺 {channel_name}")
+        print(f"\n[CHANNEL] {channel_name}")
         print("-" * 70)
 
         creds = get_valid_credentials(channel_name)
 
         if creds:
-            print(f"✅ Authenticated: YES")
-            print(f"✅ Valid: {creds.valid}")
+            print(f"[OK] Authenticated: YES")
+            print(f"[OK] Valid: {creds.valid}")
             if hasattr(creds, 'expiry') and creds.expiry:
                 time_until_expiry = (creds.expiry - datetime.utcnow()).total_seconds()
-                print(f"⏰ Expires in: {time_until_expiry/3600:.1f} hours")
-            print(f"🔑 Has refresh token: {bool(creds.refresh_token)}")
+                print(f"[TIME] Expires in: {time_until_expiry/3600:.1f} hours")
+            print(f"[KEY] Has refresh token: {bool(creds.refresh_token)}")
 
             # Test API call
             info = get_channel_info(channel_name)
             if info:
-                print(f"✅ API Test: SUCCESS")
+                print(f"[OK] API Test: SUCCESS")
                 print(f"   Channel: {info['title']}")
                 print(f"   Subscribers: {info['subscribers']}")
             else:
-                print(f"❌ API Test: FAILED")
+                print(f"[ERROR] API Test: FAILED")
         else:
-            print(f"❌ Authenticated: NO")
-            print(f"⚠️ Action: Re-authenticate required")
+            print(f"[ERROR] Authenticated: NO")
+            print(f"[WARNING] Action: Re-authenticate required")
 
     print("\n" + "=" * 70)
 
@@ -480,8 +480,9 @@ if __name__ == "__main__":
     # Start auto-refresh
     start_auto_refresh()
 
-    print("\n✅ Bulletproof auth manager ready!")
-    print("   - Auto-refresh runs every 30 minutes")
-    print("   - Tokens refresh 2 hours before expiration")
+    print("\n[OK] Bulletproof auth manager ready!")
+    print("   - Auto-refresh runs every 15 minutes")
+    print("   - Tokens refresh 24 hours before expiration")
     print("   - Multiple retry attempts on failures")
     print("   - Backup tokens preserved")
+    print("   - Maximum token longevity configuration")

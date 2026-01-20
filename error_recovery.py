@@ -105,7 +105,7 @@ def retry_with_backoff(config: RetryConfig = None):
                         config.max_delay
                     )
 
-                    print(f"⚠️  Attempt {attempt}/{config.max_attempts} failed: {str(e)[:100]}")
+                    print(f"[WARNING]  Attempt {attempt}/{config.max_attempts} failed: {str(e)[:100]}")
                     print(f"   Retrying in {delay:.1f}s...")
                     time.sleep(delay)
 
@@ -186,7 +186,7 @@ class ErrorRecoveryManager:
             channel_id,
             'warning',
             'recovery',
-            '🔧 Authentication error detected. Please re-authenticate in UI Settings tab.'
+            '[CONFIG] Authentication error detected. Please re-authenticate in UI Settings tab.'
         )
 
         return {
@@ -206,7 +206,7 @@ class ErrorRecoveryManager:
             channel_id,
             'warning',
             'recovery',
-            '⏳ YouTube quota exhausted. Channel will auto-resume at midnight PST.'
+            '[WAIT] YouTube quota exhausted. Channel will auto-resume at midnight PST.'
         )
 
         mark_quota_exhausted()
@@ -225,7 +225,7 @@ class ErrorRecoveryManager:
         from channel_manager import add_log
         import subprocess
 
-        add_log(channel_id, 'warning', 'recovery', '🔧 FFmpeg error detected. Checking installation...')
+        add_log(channel_id, 'warning', 'recovery', '[CONFIG] FFmpeg error detected. Checking installation...')
 
         # Check if ffmpeg is available
         try:
@@ -239,7 +239,7 @@ class ErrorRecoveryManager:
                 channel_id,
                 'error',
                 'recovery',
-                '❌ FFmpeg not found. Install with: brew install ffmpeg'
+                '[ERROR] FFmpeg not found. Install with: brew install ffmpeg'
             )
             return {
                 'success': False,
@@ -249,7 +249,7 @@ class ErrorRecoveryManager:
                 'auto_recoverable': False
             }
         else:
-            add_log(channel_id, 'info', 'recovery', '✅ FFmpeg is installed. Error may be transient.')
+            add_log(channel_id, 'info', 'recovery', '[OK] FFmpeg is installed. Error may be transient.')
             return {
                 'success': True,
                 'category': 'ffmpeg',
@@ -267,7 +267,7 @@ class ErrorRecoveryManager:
             channel_id,
             'info',
             'recovery',
-            '🔄 Groq API error. GroqManager will automatically switch to backup key.'
+            '[REFRESH] Groq API error. GroqManager will automatically switch to backup key.'
         )
 
         return {
@@ -286,7 +286,7 @@ class ErrorRecoveryManager:
             channel_id,
             'info',
             'recovery',
-            '🔄 Duplicate detected. System will generate alternative topic on next attempt.'
+            '[REFRESH] Duplicate detected. System will generate alternative topic on next attempt.'
         )
 
         return {
@@ -326,9 +326,9 @@ if __name__ == "__main__":
 
     try:
         result = flaky_function()
-        print(f"   ✅ {result} (after {attempt_count[0]} attempts)\n")
+        print(f"   [OK] {result} (after {attempt_count[0]} attempts)\n")
     except Exception as e:
-        print(f"   ❌ Failed: {e}\n")
+        print(f"   [ERROR] Failed: {e}\n")
 
     # Test error categorization
     print("2. Testing error categorization:")
@@ -346,4 +346,4 @@ if __name__ == "__main__":
         category = manager.categorize_error(error)
         print(f"   '{error[:40]}...' → {category}")
 
-    print("\n✅ Error recovery system ready!")
+    print("\n[OK] Error recovery system ready!")

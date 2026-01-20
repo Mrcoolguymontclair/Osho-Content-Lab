@@ -225,9 +225,9 @@ def migrate_database_for_analytics():
         conn.close()
 
         if migrations_applied:
-            print(f"✅ Database migration complete. Added columns: {', '.join(migrations_applied)}")
+            print(f"[OK] Database migration complete. Added columns: {', '.join(migrations_applied)}")
         else:
-            print("✅ Database already up to date (all analytics columns exist)")
+            print("[OK] Database already up to date (all analytics columns exist)")
 
         return len(migrations_applied) > 0
 

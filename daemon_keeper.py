@@ -29,7 +29,7 @@ keeper_running = True
 def signal_handler(signum, frame):
     """Handle shutdown signals"""
     global keeper_running
-    print(f"\n⚠️ Received signal {signum}, stopping keeper...")
+    print(f"\n[WARNING] Received signal {signum}, stopping keeper...")
     keeper_running = False
 
 def is_daemon_running():
@@ -49,13 +49,13 @@ def is_daemon_running():
 
 def validate_dependencies():
     """Run pre-flight validation"""
-    print("🔍 Validating dependencies...")
+    print(" Validating dependencies...")
     result = subprocess.run([sys.executable, "daemon_startup_validator.py"], capture_output=True)
     return result.returncode == 0
 
 def start_daemon():
     """Start the daemon process"""
-    print(f"🚀 Starting daemon at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"[LAUNCH] Starting daemon at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     # Clear old PID file
     if os.path.exists(PID_FILE):
@@ -78,10 +78,10 @@ def start_daemon():
     for i in range(10):
         time.sleep(1)
         if is_daemon_running():
-            print(f"✅ Daemon started successfully")
+            print(f"[OK] Daemon started successfully")
             return True
 
-    print(f"❌ Daemon failed to start")
+    print(f"[ERROR] Daemon failed to start")
     return False
 
 def main():
@@ -103,10 +103,10 @@ def main():
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
     print("Features:")
-    print("  ✅ Auto-restart on crash")
-    print("  ✅ Pre-flight validation")
-    print("  ✅ Health monitoring")
-    print("  ✅ NEVER gives up")
+    print("  [OK] Auto-restart on crash")
+    print("  [OK] Pre-flight validation")
+    print("  [OK] Health monitoring")
+    print("  [OK] NEVER gives up")
     print()
 
     consecutive_failures = 0
@@ -116,11 +116,11 @@ def main():
         try:
             # Check if daemon is running
             if not is_daemon_running():
-                print(f"\n⚠️ Daemon not running! (failures: {consecutive_failures})")
+                print(f"\n[WARNING] Daemon not running! (failures: {consecutive_failures})")
 
                 # Validate dependencies before restart
                 if not validate_dependencies():
-                    print("❌ Validation failed - waiting 60s before retry")
+                    print("[ERROR] Validation failed - waiting 60s before retry")
                     consecutive_failures += 1
                     time.sleep(60)
                     continue
@@ -128,36 +128,36 @@ def main():
                 # Calculate backoff time
                 if consecutive_failures >= max_failures_before_backoff:
                     backoff = min(60 * (2 ** (consecutive_failures - max_failures_before_backoff)), 600)  # Max 10 minutes
-                    print(f"⏳ Multiple failures detected, waiting {backoff}s before restart...")
+                    print(f"[WAIT] Multiple failures detected, waiting {backoff}s before restart...")
                     time.sleep(backoff)
 
                 # Try to start daemon
                 if start_daemon():
                     consecutive_failures = 0
-                    print("✅ Daemon recovered successfully")
+                    print("[OK] Daemon recovered successfully")
                 else:
                     consecutive_failures += 1
-                    print(f"❌ Restart attempt failed (total failures: {consecutive_failures})")
+                    print(f"[ERROR] Restart attempt failed (total failures: {consecutive_failures})")
                     time.sleep(10)
 
             else:
                 # Daemon is running - reset failure counter
                 if consecutive_failures > 0:
                     consecutive_failures = 0
-                    print("✅ Daemon stable again")
+                    print("[OK] Daemon stable again")
 
             # Check every 10 seconds
             time.sleep(10)
 
         except KeyboardInterrupt:
-            print("\n⚠️ Keeper interrupted by user")
+            print("\n[WARNING] Keeper interrupted by user")
             keeper_running = False
             break
         except Exception as e:
-            print(f"❌ Keeper error: {e}")
+            print(f"[ERROR] Keeper error: {e}")
             time.sleep(10)
 
-    print("\n🛑 Keeper stopped")
+    print("\n[STOP] Keeper stopped")
 
     # Clean up
     if os.path.exists(KEEPER_PID_FILE):

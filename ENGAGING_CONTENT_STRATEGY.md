@@ -1,7 +1,7 @@
 # Engaging Content Strategy
 **Goal:** Create ranking videos that people actually want to watch
 
-## ❌ What's NOT Working (Current Problems)
+## [ERROR] What's NOT Working (Current Problems)
 
 ### Bad Examples from RankRiot:
 - "TOP 10 MOST EXTREME DESERT LANDSCAPES ON EARTH RANKED!"
@@ -17,7 +17,7 @@
 
 ---
 
-## ✅ What WILL Work (New Strategy)
+## [OK] What WILL Work (New Strategy)
 
 ### Trending Topic Research
 **Before generating ANY video, ask:**
@@ -34,48 +34,48 @@
 
 ---
 
-## 🎯 Winning Content Categories
+## [TARGET] Winning Content Categories
 
 ### 1. **Satisfying & ASMR**
-✅ "Top 5 Most Satisfying Pressure Washing Moments"
-✅ "Ranking Most Oddly Satisfying Sounds"
-✅ "Top 5 Calmest Nature Sounds for Sleep"
+[OK] "Top 5 Most Satisfying Pressure Washing Moments"
+[OK] "Ranking Most Oddly Satisfying Sounds"
+[OK] "Top 5 Calmest Nature Sounds for Sleep"
 
 **Why it works:** Immediate sensory payoff, rewatchable
 
 ### 2. **Nostalgia**
-✅ "Ranking Best 2000s Kids Shows"
-✅ "Top 5 Childhood Games We Miss"
-✅ "Ranking Most Iconic Early YouTube Moments"
+[OK] "Ranking Best 2000s Kids Shows"
+[OK] "Top 5 Childhood Games We Miss"
+[OK] "Ranking Most Iconic Early YouTube Moments"
 
 **Why it works:** Emotional connection, comment engagement
 
 ### 3. **Food & Lifestyle**
-✅ "Ranking Best Coffee Shop Aesthetics"
-✅ "Top 5 Most Underrated Snacks"
-✅ "Ranking Cozy Rainy Day Activities"
+[OK] "Ranking Best Coffee Shop Aesthetics"
+[OK] "Top 5 Most Underrated Snacks"
+[OK] "Ranking Cozy Rainy Day Activities"
 
 **Why it works:** Relatable, shareable, inspires action
 
 ### 4. **Pop Culture (Current)**
-✅ "Ranking Best [Current Show] Characters"
-✅ "Top 5 Most Wholesome [Recent Meme] Moments"
-✅ "Ranking [Trending Game] Moments That Made Us Laugh"
+[OK] "Ranking Best [Current Show] Characters"
+[OK] "Top 5 Most Wholesome [Recent Meme] Moments"
+[OK] "Ranking [Trending Game] Moments That Made Us Laugh"
 
 **Why it works:** Rides current trends, high searchability
 
 ### 5. **Hidden Gems**
-✅ "Top 5 Underrated Travel Spots in Japan"
-✅ "Ranking Most Overlooked Indie Games"
-✅ "Best Hidden Features in [Popular App]"
+[OK] "Top 5 Underrated Travel Spots in Japan"
+[OK] "Ranking Most Overlooked Indie Games"
+[OK] "Best Hidden Features in [Popular App]"
 
 **Why it works:** Provides value, saves viewer time
 
 ---
 
-## 📱 Title Formula (60 chars max)
+##  Title Formula (60 chars max)
 
-### ✅ GOOD Formula:
+### [OK] GOOD Formula:
 `[Descriptive] [Specific Category] Ranked`
 
 Examples:
@@ -83,14 +83,14 @@ Examples:
 - "Underrated Cozy Cafes in Portland Ranked"
 - "Best Lo-Fi Beats for Studying Ranked"
 
-### ❌ BAD (Don't Use):
+### [ERROR] BAD (Don't Use):
 - "TOP 10 MOST EXTREME [GENERIC THING] RANKED!" (spam)
 - "You won't believe #1 — " (clickbait)
 - "UNLOCK 10X..." (fake promises)
 
 ---
 
-## 🎨 Visual Quality Standards
+## [DESIGN] Visual Quality Standards
 
 ### Must-Haves:
 1. **High-quality clips** - No low-res stock footage
@@ -107,21 +107,21 @@ Examples:
 
 ---
 
-## 🔥 Hook Strategy (First 3 Seconds)
+## [HOT] Hook Strategy (First 3 Seconds)
 
-### ✅ GOOD Hooks:
+### [OK] GOOD Hooks:
 - "Starting with something calming..." (sets expectations)
 - "Each one gets better, watch till #1" (promise progression)
 - "You'll know your favorite by the end" (personal connection)
 
-### ❌ BAD Hooks (Never Use):
+### [ERROR] BAD Hooks (Never Use):
 - "99% of people don't know..." (lie)
 - "This will change your life..." (exaggeration)
 - "You won't believe..." (overused clickbait)
 
 ---
 
-## 📊 Success Metrics
+## [CHART] Success Metrics
 
 ### What We're Targeting:
 - **Views:** 100+ views within 48 hours
@@ -137,9 +137,9 @@ Examples:
 
 ---
 
-## 🚀 Implementation Plan
+## [LAUNCH] Implementation Plan
 
-### Phase 1: Fix Title Generation (✅ DONE)
+### Phase 1: Fix Title Generation ([OK] DONE)
 - No ALL CAPS
 - No clickbait prefixes
 - Title Case only
@@ -159,7 +159,7 @@ Examples:
 
 ---
 
-## 🎯 Example: A Perfect Video
+## [TARGET] Example: A Perfect Video
 
 ### Title:
 "Most Calming Forest Sounds Ranked"
@@ -189,7 +189,7 @@ Examples:
 
 ---
 
-## 💡 Topic Generator Prompt
+## [IDEA] Topic Generator Prompt
 
 When generating topics, ask:
 1. Would I actually click this?
@@ -202,7 +202,7 @@ If answer is NO to any question → reject the topic
 
 ---
 
-## 🔄 Recovery Strategy for RankRiot
+## [REFRESH] Recovery Strategy for RankRiot
 
 ### Option 1: Rebrand
 - Create NEW channel with better name
@@ -220,7 +220,7 @@ If answer is NO to any question → reject the topic
 
 ---
 
-## ✅ Quality Checklist (Before Posting)
+## [OK] Quality Checklist (Before Posting)
 
 Every video must pass:
 - [ ] Title is engaging, not clickbait
@@ -238,7 +238,7 @@ Every video must pass:
 
 ---
 
-## 🎬 Next Steps
+## [VIDEO] Next Steps
 
 1. Test the improvements with ONE video
 2. Verify title is good (no ALL CAPS)

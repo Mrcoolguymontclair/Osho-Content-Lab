@@ -391,9 +391,9 @@ class VideoQualityEnhancer:
         if prompts is None:
             # Default prompts at key moments
             prompts = [
-                {'time': 3, 'text': '👍 LIKE if you agree!', 'position': 'bottom'},
-                {'time': 20, 'text': '💬 Comment your favorite!', 'position': 'bottom'},
-                {'time': 40, 'text': '🔔 Subscribe for more!', 'position': 'bottom'}
+                {'time': 3, 'text': '[GOOD] LIKE if you agree!', 'position': 'bottom'},
+                {'time': 20, 'text': ' Comment your favorite!', 'position': 'bottom'},
+                {'time': 40, 'text': ' Subscribe for more!', 'position': 'bottom'}
             ]
 
         try:
@@ -449,13 +449,13 @@ class VideoQualityEnhancer:
 # Testing
 if __name__ == "__main__":
     print("=" * 70)
-    print("🎬 VIDEO QUALITY ENHANCER")
+    print("[VIDEO] VIDEO QUALITY ENHANCER")
     print("=" * 70)
 
     enhancer = VideoQualityEnhancer()
 
     # Test 1: Hook generation
-    print("\n1️⃣ Hook Generation:")
+    print("\n1⃣ Hook Generation:")
     hooks = [
         enhancer.generate_hook_script("Deadliest Roller Coasters", "ranking"),
         enhancer.generate_hook_script("Climate Change Facts", "standard"),
@@ -465,15 +465,15 @@ if __name__ == "__main__":
         print(f"   Hook {i}: {hook}")
 
     # Test 2: Smart search queries
-    print("\n2️⃣ Smart Search Queries:")
+    print("\n2⃣ Smart Search Queries:")
     queries = enhancer.generate_smart_search_queries("Roller Coaster", "extreme")
     for i, query in enumerate(queries, 1):
         print(f"   Query {i}: {query}")
 
     # Test 3: Dynamic text overlay
-    print("\n3️⃣ Dynamic Text Overlay:")
+    print("\n3⃣ Dynamic Text Overlay:")
     overlay = enhancer.create_dynamic_text_overlay("MOST EXTREME LOCATION", rank=5, style="bold")
     print(f"   Filter: {overlay[:100]}...")
 
-    print("\n✅ All quality enhancements ready!")
+    print("\n[OK] All quality enhancements ready!")
     print("\n" + "=" * 70)

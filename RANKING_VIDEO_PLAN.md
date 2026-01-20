@@ -157,8 +157,8 @@ ALTER TABLE videos ADD COLUMN ranking_data TEXT;
 ### New Files:
 ```
 overlay_templates/
-  └── ranking_sidebar.png      # Template for sidebar
-  └── title_bar_template.png   # Template for title
+   ranking_sidebar.png      # Template for sidebar
+   title_bar_template.png   # Template for title
 
 video_engine_ranking.py         # New: Ranking-specific video generation
 ranking_prompts.py              # New: AI prompts for ranking content

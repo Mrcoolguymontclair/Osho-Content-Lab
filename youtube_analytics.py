@@ -396,7 +396,7 @@ def upgrade_database_schema():
     conn.commit()
     conn.close()
 
-    print("✅ Database schema upgraded for analytics")
+    print("[OK] Database schema upgraded for analytics")
 
 
 # ==============================================================================

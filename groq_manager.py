@@ -41,7 +41,7 @@ class GroqManager:
         if not keys:
             raise ValueError("No Groq API keys found in secrets")
 
-        print(f"✅ Loaded {len(keys)} Groq API key(s)")
+        print(f"[OK] Loaded {len(keys)} Groq API key(s)")
         return keys
 
     def _initialize_client(self):
@@ -49,7 +49,7 @@ class GroqManager:
         current_key = self.api_keys[self.current_key_index]
         self.client = Groq(api_key=current_key)
         key_preview = current_key[:8] + "..." + current_key[-4:]
-        print(f"🔑 Using Groq API key #{self.current_key_index + 1}: {key_preview}")
+        print(f"[KEY] Using Groq API key #{self.current_key_index + 1}: {key_preview}")
 
     def _switch_to_next_key(self) -> bool:
         """
@@ -58,12 +58,12 @@ class GroqManager:
         Returns: True if switched successfully, False if no more keys
         """
         if self.current_key_index + 1 >= len(self.api_keys):
-            print("⚠️ All Groq API keys exhausted")
+            print("[WARNING] All Groq API keys exhausted")
             return False
 
         self.current_key_index += 1
         self._initialize_client()
-        print(f"🔄 Switched to Groq API key #{self.current_key_index + 1}")
+        print(f"[REFRESH] Switched to Groq API key #{self.current_key_index + 1}")
         return True
 
     def chat_completions_create(self, **kwargs):
@@ -84,11 +84,11 @@ class GroqManager:
 
                 # Check if this is a quota/rate limit error
                 if any(keyword in error_str for keyword in ['quota', 'rate limit', 'limit exceeded', '429']):
-                    print(f"⚠️ Quota exhausted on key #{self.current_key_index + 1}")
+                    print(f"[WARNING] Quota exhausted on key #{self.current_key_index + 1}")
 
                     # Try switching to next key
                     if self._switch_to_next_key():
-                        print(f"🔄 Retrying with key #{self.current_key_index + 1}...")
+                        print(f"[REFRESH] Retrying with key #{self.current_key_index + 1}...")
                         continue  # Retry with new key
                     else:
                         # No more keys available
@@ -139,4 +139,4 @@ if __name__ == "__main__":
         manager._switch_to_next_key()
         print(f"New key index: {manager.current_key_index}")
 
-    print("\n✅ Groq Manager ready for automatic failover")
+    print("\n[OK] Groq Manager ready for automatic failover")

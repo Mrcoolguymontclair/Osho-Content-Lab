@@ -88,7 +88,7 @@ def generate_ranking_script_v2(
         viral_topic_data = get_viral_topic(recent_titles)
         actual_theme = viral_topic_data['topic']
 
-        log_to_db(channel_id, "info", "script", f"🔥 VIRAL TOPIC: {actual_theme} (category: {viral_topic_data['category']})")
+        log_to_db(channel_id, "info", "script", f"[HOT] VIRAL TOPIC: {actual_theme} (category: {viral_topic_data['category']})")
 
         # Override boring theme with viral topic
         theme = actual_theme
@@ -101,20 +101,20 @@ STYLE: {style}
 FORMAT: Top {ranking_count} countdown (5→1 or 10→1)
 TARGET: 45 seconds total
 
-🚫 AVOID these recent topics: {avoid_topics_str}
+ AVOID these recent topics: {avoid_topics_str}
 
 CRITICAL REQUIREMENTS:
 
 1. ENGAGING NARRATION (NOT BORING!)
-   ✅ Use varied sentence structures (not all "This X is Y because Z")
-   ✅ Add personality: "Wait till you see #1!", "Believe it or not...", "Here's the crazy part..."
-   ✅ Use specific details and facts, not generic statements
-   ✅ Create curiosity: "You've probably never heard of this one"
-   ✅ Build excitement as you count down
+   [OK] Use varied sentence structures (not all "This X is Y because Z")
+   [OK] Add personality: "Wait till you see #1!", "Believe it or not...", "Here's the crazy part..."
+   [OK] Use specific details and facts, not generic statements
+   [OK] Create curiosity: "You've probably never heard of this one"
+   [OK] Build excitement as you count down
 
-   ❌ DON'T be robotic: "Number 5 is X. It is Y. This is because Z."
-   ❌ DON'T repeat the same sentence structure every time
-   ❌ DON'T use generic descriptions
+   [ERROR] DON'T be robotic: "Number 5 is X. It is Y. This is because Z."
+   [ERROR] DON'T repeat the same sentence structure every time
+   [ERROR] DON'T use generic descriptions
 
 2. TITLE FORMAT
    - ALL CAPS with exclamation mark
@@ -125,9 +125,9 @@ CRITICAL REQUIREMENTS:
 3. SEARCH QUERIES (CRITICAL FOR GOOD CLIPS)
    - Be VERY specific and visual
    - Include adjectives that describe the visual you want
-   - ✅ GOOD: "volcanic eruption with lava flow aerial view"
-   - ✅ GOOD: "massive waterfall rainbow mist slow motion"
-   - ❌ BAD: "volcano" or "waterfall" (too generic)
+   - [OK] GOOD: "volcanic eruption with lava flow aerial view"
+   - [OK] GOOD: "massive waterfall rainbow mist slow motion"
+   - [ERROR] BAD: "volcano" or "waterfall" (too generic)
 
 4. PACING
    - Rank 5: 7 seconds (intro + description)
@@ -184,7 +184,7 @@ Make it EXCITING and VARIED! People should WANT to watch this!"""
         script['title'] = optimized_title
         log_to_db(channel_id, "info", "title_opt", f"Title: {original_title[:40]}... → {optimized_title} (score: {title_score['score']}/100)")
 
-        log_to_db(channel_id, "info", "script", f"✓ Generated: {script['title']} ({ranking_count} items)")
+        log_to_db(channel_id, "info", "script", f"[OK] Generated: {script['title']} ({ranking_count} items)")
         return script, None
 
     except Exception as e:
@@ -309,7 +309,7 @@ def download_engaging_clip(
         if not os.path.exists(output_path) or os.path.getsize(output_path) < 50000:
             return False, "Output file too small"
 
-        log_to_db(channel_id, "info", "clip", f"✓ Downloaded: {search_query[:40]}")
+        log_to_db(channel_id, "info", "clip", f"[OK] Downloaded: {search_query[:40]}")
         return True, None
 
     except Exception as e:
@@ -426,7 +426,7 @@ def create_perfect_audio_track(
         if duration_diff > 0.1:
             log_to_db(channel_id, "warning", "audio", f"Duration off by {duration_diff:.2f}s")
         else:
-            log_to_db(channel_id, "info", "audio", f"✓ Perfect audio: {final_duration:.2f}s")
+            log_to_db(channel_id, "info", "audio", f"[OK] Perfect audio: {final_duration:.2f}s")
 
         # Cleanup
         for temp_file in [concat_vo, mixed_audio, vo_list_file]:
@@ -622,7 +622,7 @@ def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -
             success, error = generate_voiceover(script['hook'], hook_path, channel_id)
             if success:
                 voiceover_files.append(hook_path)
-                log_to_db(channel_id, "info", "generation", f"✓ Hook: {script['hook'][:40]}...")
+                log_to_db(channel_id, "info", "generation", f"[OK] Hook: {script['hook'][:40]}...")
 
         # Generate narration for each rank
         for item in ranked_items:
@@ -636,7 +636,7 @@ def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -
 
             voiceover_files.append(vo_path)
 
-        log_to_db(channel_id, "info", "generation", f"✓ Generated {len(voiceover_files)} voiceovers")
+        log_to_db(channel_id, "info", "generation", f"[OK] Generated {len(voiceover_files)} voiceovers")
 
         # STEP 3: Download engaging clips
         log_to_db(channel_id, "info", "generation", "Downloading clips...")
@@ -660,14 +660,14 @@ def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -
 
             clip_files.append(clip_path)
 
-        log_to_db(channel_id, "info", "generation", f"✓ Downloaded {len(clip_files)} clips")
+        log_to_db(channel_id, "info", "generation", f"[OK] Downloaded {len(clip_files)} clips")
 
         # STEP 4: Get music
         mood_tags = get_default_music_for_video_type('ranking')
         music_path = get_music_for_mood(mood_tags)
 
         if music_path:
-            log_to_db(channel_id, "info", "generation", f"✓ Music: {os.path.basename(music_path)}")
+            log_to_db(channel_id, "info", "generation", f"[OK] Music: {os.path.basename(music_path)}")
         else:
             log_to_db(channel_id, "warning", "generation", "No music available")
 
@@ -697,7 +697,7 @@ def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -
 
             processed_clips.append(processed_path)
 
-        log_to_db(channel_id, "info", "generation", "✓ Visual clips complete")
+        log_to_db(channel_id, "info", "generation", "[OK] Visual clips complete")
 
         # STEP 6: Concatenate video clips
         log_to_db(channel_id, "info", "generation", "Concatenating clips...")
@@ -767,7 +767,7 @@ def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -
         actual_duration = float(probe_result.stdout.strip())
         size_mb = os.path.getsize(final_video) / (1024 * 1024)
 
-        log_to_db(channel_id, "info", "generation", f"✓ COMPLETE! Duration: {actual_duration:.2f}s | Size: {size_mb:.1f}MB")
+        log_to_db(channel_id, "info", "generation", f"[OK] COMPLETE! Duration: {actual_duration:.2f}s | Size: {size_mb:.1f}MB")
 
         if abs(actual_duration - TOTAL_DURATION) > 1.0:
             log_to_db(channel_id, "warning", "generation", f"Duration off by {abs(actual_duration - TOTAL_DURATION):.2f}s")

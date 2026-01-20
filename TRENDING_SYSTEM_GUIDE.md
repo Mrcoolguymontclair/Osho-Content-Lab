@@ -1,4 +1,4 @@
-# 🔥 Trending Video System - Complete Guide
+# [HOT] Trending Video System - Complete Guide
 
 ## Overview
 
@@ -44,7 +44,7 @@ The trending video system automatically creates viral content based on real-time
 2. Click on your channel
 3. Go to **Settings** tab
 4. Under "Video Format" dropdown, select **"trending"**
-5. Click "💾 Save Settings"
+5. Click "[SAVE] Save Settings"
 6. Activate the channel if not already active
 
 ### Option 2: Database (Advanced)
@@ -63,8 +63,8 @@ When video_type is set to "trending", the Dashboard shows:
 
 ### Settings Tab
 Shows real-time status:
-- ✅ "X trending topics ready for video generation!" (green = ready)
-- ⏳ "No trending topics available yet" (yellow = waiting)
+- [OK] "X trending topics ready for video generation!" (green = ready)
+- [WAIT] "No trending topics available yet" (yellow = waiting)
 
 ## Three Video Format Options
 
@@ -77,15 +77,15 @@ Shows real-time status:
 ## Current Status
 
 Run `python3 test_trending_system.py` to see:
-- ✅ 29 approved trends ready for generation
-- ✅ 10 new trends fetched from Google
-- ✅ 2 Groq API keys configured for failover
-- ✅ Trends table initialized and operational
+- [OK] 29 approved trends ready for generation
+- [OK] 10 new trends fetched from Google
+- [OK] 2 Groq API keys configured for failover
+- [OK] Trends table initialized and operational
 
 ## Fallback Behavior
 
 If you set video_type to "trending" but no trends are available:
-- System logs: "⏳ No trending topics available yet"
+- System logs: "[WAIT] No trending topics available yet"
 - Automatically falls back to standard video generation
 - Continues checking for trends in background
 
@@ -142,7 +142,7 @@ python3 -c "from trend_tracker import init_trends_table; init_trends_table()"
 ### Videos still using ranking/standard format
 **Check:**
 1. Video Format is set to "trending" in Settings
-2. Settings were saved (click 💾 Save Settings)
+2. Settings were saved (click [SAVE] Save Settings)
 3. Channel was reactivated after changing settings
 
 ## Best Practices
@@ -200,4 +200,4 @@ YouTube upload
 ---
 
 **Last Updated:** January 12, 2026
-**System Status:** ✅ Operational (29 pending trends)
+**System Status:** [OK] Operational (29 pending trends)

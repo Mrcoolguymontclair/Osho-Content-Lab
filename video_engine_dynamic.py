@@ -42,7 +42,7 @@ def search_pexels_video(query: str, orientation: str = 'portrait') -> Optional[s
     Returns: Video URL or None
     """
     if not PEXELS_API_KEY:
-        print("❌ PEXELS_API_KEY not set")
+        print("[ERROR] PEXELS_API_KEY not set")
         return None
 
     url = "https://api.pexels.com/videos/search"
@@ -63,11 +63,11 @@ def search_pexels_video(query: str, orientation: str = 'portrait') -> Optional[s
             hd_file = next((f for f in video_files if f['quality'] == 'hd'), video_files[0])
             return hd_file['link']
 
-        print(f"⚠️ No videos found for query: {query}")
+        print(f"[WARNING] No videos found for query: {query}")
         return None
 
     except Exception as e:
-        print(f"❌ Pexels search error: {e}")
+        print(f"[ERROR] Pexels search error: {e}")
         return None
 
 
@@ -84,7 +84,7 @@ def download_video_clip(url: str, output_path: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"❌ Download error: {e}")
+        print(f"[ERROR] Download error: {e}")
         return False
 
 
@@ -147,7 +147,7 @@ def generate_voiceover(segments: List[Dict], output_dir: str, voice: str = "en-U
 
         audio_path = os.path.join(output_dir, f'segment_{i+1}_audio.mp3')
 
-        print(f"  🎙️ Generating voiceover for segment {i+1}...")
+        print(f"   Generating voiceover for segment {i+1}...")
         generate_tts(narration, audio_path, voice)
 
         audio_files.append(audio_path)
@@ -170,12 +170,12 @@ def fetch_video_clips(segments: List[Dict], output_dir: str) -> List[str]:
     for i, segment in enumerate(segments):
         search_query = segment.get('search_query', 'nature')
 
-        print(f"  🎬 Searching Pexels for: {search_query}")
+        print(f"  [VIDEO] Searching Pexels for: {search_query}")
         video_url = search_pexels_video(search_query)
 
         if not video_url:
             # Fallback to generic search
-            print(f"  ⚠️ Trying fallback search...")
+            print(f"  [WARNING] Trying fallback search...")
             video_url = search_pexels_video('abstract motion')
 
         if video_url:
@@ -218,7 +218,7 @@ def process_video_clip(clip_path: str, duration: float, output_path: str) -> boo
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"❌ FFmpeg clip processing error: {e.stderr.decode()}")
+        print(f"[ERROR] FFmpeg clip processing error: {e.stderr.decode()}")
         return False
 
 
@@ -322,11 +322,11 @@ def assemble_dynamic_video(
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"❌ Video assembly error: {e.stderr.decode()}")
+        print(f"[ERROR] Video assembly error: {e.stderr.decode()}")
         return False
 
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"[ERROR] Unexpected error: {e}")
         return False
 
 
@@ -341,7 +341,7 @@ def generate_video_from_plan(video_plan: Dict, output_path: str, voice: str = "e
 
     Returns: True if successful
     """
-    print(f"\n🎬 Generating {video_plan['video_type'].upper()} video...")
+    print(f"\n[VIDEO] Generating {video_plan['video_type'].upper()} video...")
     print(f"Title: {video_plan['title']}")
     print(f"Clips: {video_plan['clip_count']}")
 
@@ -351,15 +351,15 @@ def generate_video_from_plan(video_plan: Dict, output_path: str, voice: str = "e
         segments = video_plan['segments']
 
         # Step 1: Generate voiceovers
-        print("\n📢 Generating voiceovers...")
+        print("\n Generating voiceovers...")
         audio_files = generate_voiceover(segments, temp_dir, voice)
 
         # Step 2: Fetch video clips
-        print("\n🎥 Fetching video clips...")
+        print("\n[CAMERA] Fetching video clips...")
         raw_clips = fetch_video_clips(segments, temp_dir)
 
         # Step 3: Process clips to exact duration
-        print("\n✂️ Processing clips...")
+        print("\n Processing clips...")
         processed_clips = []
         for i, (raw_clip, segment) in enumerate(zip(raw_clips, segments)):
             if raw_clip:
@@ -369,18 +369,18 @@ def generate_video_from_plan(video_plan: Dict, output_path: str, voice: str = "e
                 if process_video_clip(raw_clip, duration, processed_path):
                     processed_clips.append(processed_path)
                 else:
-                    print(f"  ⚠️ Failed to process clip {i+1}")
+                    print(f"  [WARNING] Failed to process clip {i+1}")
                     processed_clips.append(None)
             else:
                 processed_clips.append(None)
 
         # Step 4: Create subtitle file
-        print("\n📝 Creating subtitles...")
+        print("\n[NOTE] Creating subtitles...")
         subtitle_file = os.path.join(temp_dir, 'subtitles.srt')
         create_subtitle_file(segments, subtitle_file)
 
         # Step 5: Assemble final video (without music first)
-        print("\n🎞️ Assembling final video...")
+        print("\n Assembling final video...")
         temp_video = os.path.join(temp_dir, 'video_no_music.mp4')
 
         success = assemble_dynamic_video(
@@ -392,11 +392,11 @@ def generate_video_from_plan(video_plan: Dict, output_path: str, voice: str = "e
         )
 
         if not success:
-            print("\n❌ Video assembly failed")
+            print("\n[ERROR] Video assembly failed")
             return False
 
         # Step 6: Add background music
-        print("\n🎵 Adding background music...")
+        print("\n[MUSIC] Adding background music...")
         video_type = video_plan.get('video_type', 'standard')
         mood_tags = get_default_music_for_video_type(video_type)
         music_path = get_music_for_mood(mood_tags)
@@ -406,24 +406,24 @@ def generate_video_from_plan(video_plan: Dict, output_path: str, voice: str = "e
             music_success = add_music_to_video(temp_video, music_path, output_path, music_volume=0.12)
 
             if music_success:
-                print(f"\n✅ Video generated with music: {output_path}")
+                print(f"\n[OK] Video generated with music: {output_path}")
                 return True
             else:
-                print("\n⚠️ Music failed, using video without music")
+                print("\n[WARNING] Music failed, using video without music")
                 # Copy temp video to output as fallback
                 import shutil
                 shutil.copy(temp_video, output_path)
                 return True
         else:
-            print("\n⚠️ No music available, continuing without music")
+            print("\n[WARNING] No music available, continuing without music")
             # Copy temp video to output
             import shutil
             shutil.copy(temp_video, output_path)
-            print(f"\n✅ Video generated: {output_path}")
+            print(f"\n[OK] Video generated: {output_path}")
             return True
 
     except Exception as e:
-        print(f"\n❌ Video generation error: {e}")
+        print(f"\n[ERROR] Video generation error: {e}")
         return False
 
 
@@ -489,6 +489,6 @@ if __name__ == "__main__":
     success = generate_video_from_plan(sample_plan, output_file)
 
     if success:
-        print(f"\n✅ TEST PASSED - Video created at {output_file}")
+        print(f"\n[OK] TEST PASSED - Video created at {output_file}")
     else:
-        print("\n❌ TEST FAILED")
+        print("\n[ERROR] TEST FAILED")

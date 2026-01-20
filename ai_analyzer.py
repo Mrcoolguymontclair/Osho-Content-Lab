@@ -172,7 +172,7 @@ def analyze_channel_trends(channel_id: int, limit: int = 20) -> Optional[Dict]:
         # Add strategy effectiveness to prompt
         strategy_context = ""
         if strategy_effectiveness:
-            verdict = "✅ EFFECTIVE" if strategy_effectiveness['is_effective'] else "⚠️ NOT EFFECTIVE"
+            verdict = "[OK] EFFECTIVE" if strategy_effectiveness['is_effective'] else "[WARNING] NOT EFFECTIVE"
             strategy_context = f"""
 
 STRATEGY EFFECTIVENESS DATA (A/B Testing Results):
@@ -499,16 +499,16 @@ def apply_ai_recommendations(channel_id: int, auto_apply: bool = False) -> bool:
 
             change_pct = ((optimal_interval - current_interval) / current_interval * 100) if current_interval > 0 else 0
             add_log(channel_id, "info", "ai_recommendations",
-                    f"✅ AUTO-APPLIED: Posting interval changed from {current_interval} to {optimal_interval} min ({change_pct:+.0f}%)")
+                    f"[OK] AUTO-APPLIED: Posting interval changed from {current_interval} to {optimal_interval} min ({change_pct:+.0f}%)")
 
             return True
         elif auto_apply:
             add_log(channel_id, "warning", "ai_recommendations",
-                    f"⚠️ Confidence too low ({confidence*100:.0f}%) - settings NOT auto-applied")
+                    f"[WARNING] Confidence too low ({confidence*100:.0f}%) - settings NOT auto-applied")
             return False
         else:
             add_log(channel_id, "info", "ai_recommendations",
-                    "📋 Recommendations logged (auto-apply disabled)")
+                    " Recommendations logged (auto-apply disabled)")
             return True
 
     except Exception as e:

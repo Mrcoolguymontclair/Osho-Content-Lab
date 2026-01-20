@@ -37,14 +37,14 @@ def fetch_google_trends(region: str = 'US', timeframe: str = 'now 1-d') -> List[
         })
 
         if response.status_code != 200:
-            print(f"⚠️ RSS feed returned status {response.status_code}")
+            print(f"[WARNING] RSS feed returned status {response.status_code}")
             return []
 
         # Parse RSS feed
         feed = feedparser.parse(response.content)
 
         if not feed.entries:
-            print("⚠️ No entries in RSS feed")
+            print("[WARNING] No entries in RSS feed")
             return []
 
         trends = []
@@ -81,7 +81,7 @@ def fetch_google_trends(region: str = 'US', timeframe: str = 'now 1-d') -> List[
         return trends
 
     except Exception as e:
-        print(f"⚠️ Google Trends RSS fetch error: {str(e)[:100]}")
+        print(f"[WARNING] Google Trends RSS fetch error: {str(e)[:100]}")
         return []
 
 
@@ -185,7 +185,7 @@ def fetch_all_trends(region: str = 'US') -> Dict[str, List[Dict]]:
 
     Returns: Dictionary of trends by source
     """
-    print(f"🔍 Fetching trends for {region}...")
+    print(f" Fetching trends for {region}...")
 
     all_trends = {
         'google_daily': [],
@@ -202,30 +202,30 @@ def fetch_all_trends(region: str = 'US') -> Dict[str, List[Dict]]:
     try:
         all_trends['google_daily'] = fetch_google_trends(region=region)
         total_fetched += len(all_trends['google_daily'])
-        print(f"✓ Found {len(all_trends['google_daily'])} daily trends")
+        print(f"[OK] Found {len(all_trends['google_daily'])} daily trends")
     except Exception as e:
-        print(f"⚠️ Daily trends failed: {str(e)[:50]}")
+        print(f"[WARNING] Daily trends failed: {str(e)[:50]}")
 
     try:
         all_trends['google_realtime'] = fetch_realtime_trends(region=region)
         total_fetched += len(all_trends['google_realtime'])
-        print(f"✓ Found {len(all_trends['google_realtime'])} realtime trends")
+        print(f"[OK] Found {len(all_trends['google_realtime'])} realtime trends")
     except Exception as e:
-        print(f"⚠️ Realtime trends failed: {str(e)[:50]}")
+        print(f"[WARNING] Realtime trends failed: {str(e)[:50]}")
 
     # Category-specific
     for category in ['sports', 'entertainment', 'business']:
         try:
             all_trends[category] = get_trending_topics_by_category(category, region=region)
             total_fetched += len(all_trends[category])
-            print(f"✓ Found {len(all_trends[category])} {category} trends")
+            print(f"[OK] Found {len(all_trends[category])} {category} trends")
         except Exception as e:
-            print(f"⚠️ {category} trends failed: {str(e)[:50]}")
+            print(f"[WARNING] {category} trends failed: {str(e)[:50]}")
 
     # If all sources failed, use fallback trends
     if total_fetched == 0:
-        print("\n⚠️ Google Trends API unavailable, using fallback trending topics")
-        print("ℹ️ System will still work, these are realistic sample trends\n")
+        print("\n[WARNING] Google Trends API unavailable, using fallback trending topics")
+        print("ℹ System will still work, these are realistic sample trends\n")
 
         fallback = get_fallback_trends()
         # Distribute fallback trends across categories
@@ -234,7 +234,7 @@ def fetch_all_trends(region: str = 'US') -> Dict[str, List[Dict]]:
         all_trends['entertainment'] = [t for t in fallback if t['category'] == 'entertainment']
         all_trends['business'] = [t for t in fallback if t['category'] == 'business']
 
-        print(f"✓ Loaded {len(fallback)} fallback trends for testing")
+        print(f"[OK] Loaded {len(fallback)} fallback trends for testing")
 
     # Deduplicate across sources
     all_trends = deduplicate_trends(all_trends)
@@ -286,4 +286,4 @@ if __name__ == "__main__":
     all_trends = fetch_all_trends()
 
     total = sum(len(v) for k, v in all_trends.items() if k != 'timestamp')
-    print(f"\n✅ Total unique trends found: {total}")
+    print(f"\n[OK] Total unique trends found: {total}")

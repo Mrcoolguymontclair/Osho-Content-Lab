@@ -105,9 +105,9 @@ def generate_ranking_script(
                     strategy_prompt = f"""
 
 DATA-DRIVEN INSIGHTS (proven successful patterns):
-✅ WINNING TOPICS: {', '.join(recommended_topics)}
-✅ EFFECTIVE STYLE: {content_style}
-⚠️ AVOID: {', '.join(avoid_topics) if avoid_topics else 'N/A'}
+[OK] WINNING TOPICS: {', '.join(recommended_topics)}
+[OK] EFFECTIVE STYLE: {content_style}
+[WARNING] AVOID: {', '.join(avoid_topics) if avoid_topics else 'N/A'}
 
 Use these insights to guide your ranking topic selection.
 """
@@ -124,32 +124,32 @@ TONE: {tone}
 STYLE: {style}
 VIDEO FORMAT: {ranking_count} items, 45 seconds total ({seconds_per_rank:.1f}s per item)
 
-🚫 AVOID THESE RECENT TOPICS (we already covered them):
+ AVOID THESE RECENT TOPICS (we already covered them):
 {avoid_topics_str}
 
-⚠️ IMPORTANT: Choose a COMPLETELY DIFFERENT topic from the ones above. Be creative and unique!
+[WARNING] IMPORTANT: Choose a COMPLETELY DIFFERENT topic from the ones above. Be creative and unique!
 
 ACCURACY & SAFETY REQUIREMENTS (CRITICAL):
-⚠️ DO NOT create false, exaggerated, or unverifiable claims
-⚠️ DO NOT use misleading hooks like "99% don't know" or "this will change everything"
-⚠️ DO NOT rank things that require expert knowledge (medical, legal, safety)
-⚠️ DO focus on subjective rankings (beauty, entertainment, personal preference)
-✅ Rankings should be based on commonly agreed opinions or measurable criteria
-✅ Use honest, enthusiastic language without deception
-✅ Prefer entertainment/aesthetic rankings over factual/scientific claims
+[WARNING] DO NOT create false, exaggerated, or unverifiable claims
+[WARNING] DO NOT use misleading hooks like "99% don't know" or "this will change everything"
+[WARNING] DO NOT rank things that require expert knowledge (medical, legal, safety)
+[WARNING] DO focus on subjective rankings (beauty, entertainment, personal preference)
+[OK] Rankings should be based on commonly agreed opinions or measurable criteria
+[OK] Use honest, enthusiastic language without deception
+[OK] Prefer entertainment/aesthetic rankings over factual/scientific claims
 
 Your task:
 1. Create an engaging title: "Ranking [superlative] [category]" or "Top {ranking_count} [category]"
-   ✅ GOOD: "Ranking Most Beautiful Sunsets", "Top {ranking_count} Satisfying Moments"
-   ❌ BAD: "Ranking Healthiest Foods" (requires expertise), "Top {ranking_count} Medical Cures" (dangerous)
+   [OK] GOOD: "Ranking Most Beautiful Sunsets", "Top {ranking_count} Satisfying Moments"
+   [ERROR] BAD: "Ranking Healthiest Foods" (requires expertise), "Top {ranking_count} Medical Cures" (dangerous)
 
    TITLE FORMATTING RULES (CRITICAL):
    - Use Title Case (Capital First Letters Only)
    - NEVER use ALL CAPS (reduces clicks, looks spammy)
    - Keep under 60 characters for mobile
    - Be descriptive, not clickbait
-   - ✅ Example: "Top 5 Most Relaxing Nature Scenes"
-   - ❌ Example: "TOP 10 MOST EXTREME LANDSCAPES RANKED!"
+   - [OK] Example: "Top 5 Most Relaxing Nature Scenes"
+   - [ERROR] Example: "TOP 10 MOST EXTREME LANDSCAPES RANKED!"
 
 2. Choose an adjective that scales (beautiful→most beautiful, satisfying→most satisfying)
 
@@ -471,7 +471,7 @@ def assemble_ranking_video(
                 ], capture_output=True, text=True, timeout=10)
                 hook_duration = float(probe_result.stdout.strip())
                 voiceover_durations.append(hook_duration)
-                log_to_db(channel_id, "info", "hook", f"✅ Hook added ({hook_duration:.1f}s) - 80% retention boost!")
+                log_to_db(channel_id, "info", "hook", f"[OK] Hook added ({hook_duration:.1f}s) - 80% retention boost!")
             except:
                 voiceover_durations.append(3.0)
         else:
@@ -508,7 +508,7 @@ def assemble_ranking_video(
                 log_to_db(channel_id, "warning", "assembly", f"Could not measure VO duration for rank {item['rank']}: {e}, using 12s default")
                 voiceover_durations.append(12.0)  # Fallback to 12s if measurement fails
 
-        log_to_db(channel_id, "info", "assembly", f"✓ Generated {len(voiceover_files)} voiceovers")
+        log_to_db(channel_id, "info", "assembly", f"[OK] Generated {len(voiceover_files)} voiceovers")
 
         # =============================================================
         # STEP 2: Download video clips for all items
@@ -539,7 +539,7 @@ def assemble_ranking_video(
 
             clip_files.append(clip_path)
 
-        log_to_db(channel_id, "info", "assembly", f"✓ Downloaded {len(clip_files)} clips")
+        log_to_db(channel_id, "info", "assembly", f"[OK] Downloaded {len(clip_files)} clips")
 
         # =============================================================
         # STEP 3: Get background music (local library)
@@ -551,7 +551,7 @@ def assemble_ranking_video(
         music_path = get_music_for_mood(mood_tags)
 
         if music_path:
-            log_to_db(channel_id, "info", "assembly", f"✓ Selected: {os.path.basename(music_path)}")
+            log_to_db(channel_id, "info", "assembly", f"[OK] Selected: {os.path.basename(music_path)}")
         else:
             log_to_db(channel_id, "warning", "assembly", "No music available")
             music_path = None
@@ -709,7 +709,7 @@ def assemble_ranking_video(
 
             processed_clips.append(processed_path)
 
-        log_to_db(channel_id, "info", "assembly", "✓ Overlays and captions added")
+        log_to_db(channel_id, "info", "assembly", "[OK] Overlays and captions added")
 
         # =============================================================
         # STEP 5: Concatenate all processed clips
@@ -735,7 +735,7 @@ def assemble_ranking_video(
         if result.returncode != 0:
             return None, f"Concatenation failed: {result.stderr.decode()}"
 
-        log_to_db(channel_id, "info", "assembly", "✓ Clips concatenated")
+        log_to_db(channel_id, "info", "assembly", "[OK] Clips concatenated")
 
         # =============================================================
         # STEP 6: Mix audio (voiceovers + music)
@@ -785,12 +785,12 @@ def assemble_ranking_video(
 
             if success:
                 final_audio = mixed_audio
-                log_to_db(channel_id, "info", "assembly", "✓ Audio mixed with ducking")
+                log_to_db(channel_id, "info", "assembly", "[OK] Audio mixed with ducking")
             else:
                 log_to_db(channel_id, "warning", "assembly", "Audio mixing failed, using voiceover only")
 
         else:
-            log_to_db(channel_id, "info", "assembly", "✓ Using voiceover only (no music)")
+            log_to_db(channel_id, "info", "assembly", "[OK] Using voiceover only (no music)")
 
         # =============================================================
         # STEP 7: Merge final audio with video
@@ -842,7 +842,7 @@ def assemble_ranking_video(
             log_to_db(channel_id, "warning", "assembly", f"Could not verify duration: {e}")
 
         size_mb = os.path.getsize(final_video) / (1024 * 1024)
-        log_to_db(channel_id, "info", "assembly", f"✓ Ranking video complete! Size: {size_mb:.1f}MB")
+        log_to_db(channel_id, "info", "assembly", f"[OK] Ranking video complete! Size: {size_mb:.1f}MB")
 
         return final_video, None
 
@@ -917,14 +917,14 @@ def generate_ranking_video(channel_config: Dict, use_strategy: bool = True) -> T
         if not should_gen:
             predicted_score = prediction.get('predicted_score', 0)
             reasoning = prediction.get('reasoning', 'Low performance predicted')
-            log_to_db(channel_id, "warning", "ai_blocked", f"🛑 AI BLOCKED: '{title}' - Score {predicted_score}/100")
+            log_to_db(channel_id, "warning", "ai_blocked", f"[STOP] AI BLOCKED: '{title}' - Score {predicted_score}/100")
             log_to_db(channel_id, "info", "ai_blocked", f"Reasoning: {reasoning}")
             return None, None, f"AI blocked video generation: {reasoning} (predicted score: {predicted_score}/100)"
 
         # Log successful AI approval
         predicted_score = prediction.get('predicted_score', 50)
         predicted_views = prediction.get('predicted_views', 0)
-        log_to_db(channel_id, "info", "ai_approved", f"✅ AI APPROVED: '{title}' - Score {predicted_score}/100 (predicted {predicted_views:.0f} views)")
+        log_to_db(channel_id, "info", "ai_approved", f"[OK] AI APPROVED: '{title}' - Score {predicted_score}/100 (predicted {predicted_views:.0f} views)")
 
         log_to_db(channel_id, "info", "generation", f"Step 2: Assembling '{title}'...")
 

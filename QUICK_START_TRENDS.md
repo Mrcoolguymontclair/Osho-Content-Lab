@@ -1,6 +1,6 @@
 # Google Trends System - Quick Start Guide
 
-**Status:** ✅ Ready to Use
+**Status:** [OK] Ready to Use
 **Setup Time:** 2 minutes
 
 ---
@@ -8,9 +8,9 @@
 ## Prerequisites
 
 Before starting, ensure you have:
-- ✅ GROQ_API_KEY in `.streamlit/secrets.toml`
-- ✅ PEXELS_API_KEY in `.streamlit/secrets.toml`
-- ✅ At least one channel authenticated and active
+- [OK] GROQ_API_KEY in `.streamlit/secrets.toml`
+- [OK] PEXELS_API_KEY in `.streamlit/secrets.toml`
+- [OK] At least one channel authenticated and active
 
 ---
 
@@ -34,12 +34,12 @@ python3 youtube_daemon.py
 ### 3. Verify Trends System Started
 Look for this output:
 ```
-🔥 Starting Google Trends Autonomous System...
+[HOT] Starting Google Trends Autonomous System...
    → Fetches trending topics every 6 hours
    → AI analyzes video potential
    → Auto-generates video plans for trends
    → Prioritizes trending videos over regular content
-✅ Google Trends system active
+[OK] Google Trends system active
 ```
 
 ---
@@ -51,39 +51,39 @@ The trends worker starts and fetches Google Trends right away:
 
 ```
 ============================================================
-🔍 FETCHING GOOGLE TRENDS - 2026-01-10 18:00:00
+ FETCHING GOOGLE TRENDS - 2026-01-10 18:00:00
 ============================================================
 
-✓ Found 47 unique trends
-✓ 15 new trends (not in database)
+[OK] Found 47 unique trends
+[OK] 15 new trends (not in database)
 
-🤖 AI analyzing trends for video potential...
+ AI analyzing trends for video potential...
 
-📺 Analyzing trends for channel: YourChannel
+[CHANNEL] Analyzing trends for channel: YourChannel
    Theme: Your theme here
 
-   ✅ APPROVED (85% confidence) - Format: highlights
+   [OK] APPROVED (85% confidence) - Format: highlights
 
-🎬 Planning videos for 1 approved trends...
+[VIDEO] Planning videos for 1 approved trends...
 
-   ✅ Planned: [Trending Topic Title]
+   [OK] Planned: [Trending Topic Title]
       Format: highlights
       Clips: 5
       Urgency: very_urgent
 
 ============================================================
-✅ Trends analysis complete
-⏰ Next run in 6 hours
+[OK] Trends analysis complete
+[TIME] Next run in 6 hours
 ============================================================
 ```
 
 ### When Your Channel Needs a Video
 
 The system will:
-1. ✅ Check for approved trend video plans FIRST
-2. ✅ If trend exists → Generate dynamic trend video
-3. ✅ If no trends → Fall back to ranking/standard video
-4. ✅ Auto-post to YouTube
+1. [OK] Check for approved trend video plans FIRST
+2. [OK] If trend exists → Generate dynamic trend video
+3. [OK] If no trends → Fall back to ranking/standard video
+4. [OK] Auto-post to YouTube
 
 ---
 
@@ -142,7 +142,7 @@ sqlite3 channels.db "SELECT topic, recommended_format, urgency FROM trends WHERE
 
 ### Watch Trends Worker in Real-Time
 ```bash
-tail -f youtube_daemon.log | grep -E "TREND|🔍|✅|🤖|🎬"
+tail -f youtube_daemon.log | grep -E "TREND||[OK]||[VIDEO]"
 ```
 
 ### Check for Trend Video Generation
@@ -155,26 +155,26 @@ tail -f youtube_daemon.log | grep "TRENDING VIDEO"
 ## Expected Timeline
 
 ### Hour 0 (Now)
-- ✅ Daemon starts
-- ✅ Trends worker fetches first batch of trends
-- ✅ AI analyzes and approves 3-5 trends
-- ✅ Video plans stored in database
+- [OK] Daemon starts
+- [OK] Trends worker fetches first batch of trends
+- [OK] AI analyzes and approves 3-5 trends
+- [OK] Video plans stored in database
 
 ### Hour 0-6 (First Cycle)
-- ✅ When your channel needs a video, it checks for trends
-- ✅ If approved trend exists → Generates trend video
-- ✅ If no trends → Generates regular video
-- ✅ Auto-posts to YouTube
+- [OK] When your channel needs a video, it checks for trends
+- [OK] If approved trend exists → Generates trend video
+- [OK] If no trends → Generates regular video
+- [OK] Auto-posts to YouTube
 
 ### Hour 6 (Second Fetch)
-- ✅ Trends worker wakes up again
-- ✅ Fetches new trending topics
-- ✅ Repeats analysis and planning
+- [OK] Trends worker wakes up again
+- [OK] Fetches new trending topics
+- [OK] Repeats analysis and planning
 
 ### Hour 12, 18, 24... (Every 6 Hours)
-- ✅ Continuous trend monitoring
-- ✅ Always has fresh trending topics ready
-- ✅ Videos stay timely and relevant
+- [OK] Continuous trend monitoring
+- [OK] Always has fresh trending topics ready
+- [OK] Videos stay timely and relevant
 
 ---
 
@@ -183,7 +183,7 @@ tail -f youtube_daemon.log | grep "TRENDING VIDEO"
 ### 1. Check Daemon Output
 Look for:
 ```
-🔥 TRENDING VIDEO: [Topic Name]
+[HOT] TRENDING VIDEO: [Topic Name]
 Format: HIGHLIGHTS, Clips: 5
 ```
 
@@ -217,10 +217,10 @@ sqlite3 channels.db "SELECT name, theme FROM channels WHERE is_active = 1;"
 ```
 
 **Make theme more general:**
-- ❌ Too specific: "2024 NBA Lakers highlights"
-- ✅ Good: "Sports highlights"
-- ✅ Good: "Technology news"
-- ✅ Good: "Entertainment updates"
+- [ERROR] Too specific: "2024 NBA Lakers highlights"
+- [OK] Good: "Sports highlights"
+- [OK] Good: "Technology news"
+- [OK] Good: "Entertainment updates"
 
 ### Issue: Trends worker not showing output
 **Check daemon is running:**
@@ -285,20 +285,20 @@ for trend in approved:
     video_plan = plan_video_from_trend(trend, analysis, channel)
     if video_plan:
         update_trend_video_plan(trend_id, video_plan)
-        print(f"✅ Planned: {video_plan['title']}")
+        print(f"[OK] Planned: {video_plan['title']}")
 ```
 
 ---
 
 ## Success Indicators
 
-### ✅ System is Working If You See:
+### [OK] System is Working If You See:
 
 1. **Daemon Output:**
    ```
-   🔥 Trends Worker Started
-   ✓ Found 47 unique trends
-   ✅ Planned: [Trending Topic]
+   [HOT] Trends Worker Started
+   [OK] Found 47 unique trends
+   [OK] Planned: [Trending Topic]
    ```
 
 2. **Database Has Trends:**
@@ -309,9 +309,9 @@ for trend in approved:
 
 3. **Videos Being Generated:**
    ```
-   🔥 TRENDING VIDEO: Lakers vs Celtics
+   [HOT] TRENDING VIDEO: Lakers vs Celtics
    Format: HIGHLIGHTS, Clips: 5
-   ✅ Trend video ready: Lakers vs Celtics Game 7 Best Moments
+   [OK] Trend video ready: Lakers vs Celtics Game 7 Best Moments
    ```
 
 4. **YouTube Has Trend Videos:**
@@ -340,21 +340,21 @@ for trend in approved:
 
 ## Next Steps
 
-1. ✅ Start the daemon with trends system
-2. ✅ Wait for first trend fetch (happens immediately)
-3. ✅ Check database for approved trends
-4. ✅ Wait for next video generation
-5. ✅ Watch your channel post videos about REAL trending topics!
+1. [OK] Start the daemon with trends system
+2. [OK] Wait for first trend fetch (happens immediately)
+3. [OK] Check database for approved trends
+4. [OK] Wait for next video generation
+5. [OK] Watch your channel post videos about REAL trending topics!
 
 **The system is now fully autonomous. It will:**
-- ✅ Fetch trends every 6 hours
-- ✅ Analyze with AI
-- ✅ Plan complete videos
-- ✅ Generate and post automatically
-- ✅ Keep your channel timely and relevant forever
+- [OK] Fetch trends every 6 hours
+- [OK] Analyze with AI
+- [OK] Plan complete videos
+- [OK] Generate and post automatically
+- [OK] Keep your channel timely and relevant forever
 
 ---
 
 **Last Updated:** 2026-01-10
-**Status:** ✅ Production Ready
+**Status:** [OK] Production Ready
 **Support:** Check [GOOGLE_TRENDS_SYSTEM_COMPLETE.md](GOOGLE_TRENDS_SYSTEM_COMPLETE.md) for full documentation

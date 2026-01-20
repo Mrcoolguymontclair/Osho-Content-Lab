@@ -17,11 +17,11 @@ def check_title_quality(title: str) -> Tuple[bool, List[str]]:
 
     # Check 1: No ALL CAPS
     if title.isupper():
-        issues.append("❌ Title is ALL CAPS (looks like spam)")
+        issues.append("[ERROR] Title is ALL CAPS (looks like spam)")
 
     # Check 2: Length check (under 60 chars for mobile)
     if len(title) > 60:
-        issues.append(f"❌ Title too long ({len(title)} chars, max 60)")
+        issues.append(f"[ERROR] Title too long ({len(title)} chars, max 60)")
 
     # Check 3: No clickbait patterns
     clickbait_patterns = [
@@ -43,18 +43,18 @@ def check_title_quality(title: str) -> Tuple[bool, List[str]]:
     title_lower = title.lower()
     for pattern in clickbait_patterns:
         if re.search(pattern, title_lower):
-            issues.append(f"❌ Clickbait detected: '{pattern}'")
+            issues.append(f"[ERROR] Clickbait detected: '{pattern}'")
 
     # Check 4: Has descriptive content (not just generic words)
     generic_words = ["top", "best", "ranked", "ranking", "most"]
     content_words = [w for w in title.lower().split() if w not in generic_words and len(w) > 3]
 
     if len(content_words) < 3:
-        issues.append("❌ Too generic - needs more specific content words")
+        issues.append("[ERROR] Too generic - needs more specific content words")
 
     # Check 5: Not too much punctuation
     if title.count('!') > 1:
-        issues.append("❌ Too many exclamation marks (looks spammy)")
+        issues.append("[ERROR] Too many exclamation marks (looks spammy)")
 
     is_valid = len(issues) == 0
     return is_valid, issues
@@ -73,10 +73,10 @@ def check_narration_quality(narration: str, target_duration_seconds: float) -> T
     expected_words = int(target_duration_seconds * 2.5)
 
     if word_count > expected_words * 1.3:
-        issues.append(f"❌ Narration too long ({word_count} words, max ~{expected_words})")
+        issues.append(f"[ERROR] Narration too long ({word_count} words, max ~{expected_words})")
 
     if word_count < expected_words * 0.5:
-        issues.append(f"❌ Narration too short ({word_count} words, min ~{int(expected_words * 0.7)})")
+        issues.append(f"[ERROR] Narration too short ({word_count} words, min ~{int(expected_words * 0.7)})")
 
     # Check for exaggerations
     exaggerations = [
@@ -92,7 +92,7 @@ def check_narration_quality(narration: str, target_duration_seconds: float) -> T
     narration_lower = narration.lower()
     for phrase in exaggerations:
         if phrase in narration_lower:
-            issues.append(f"⚠️ Exaggeration detected: '{phrase}'")
+            issues.append(f"[WARNING] Exaggeration detected: '{phrase}'")
 
     is_valid = len(issues) == 0
     return is_valid, issues
@@ -114,7 +114,7 @@ def check_script_quality(script: Dict, ranking_count: int) -> Tuple[bool, List[s
     ranked_items = script.get('ranked_items', [])
 
     if len(ranked_items) != ranking_count:
-        all_issues.append(f"❌ Wrong number of items ({len(ranked_items)}, expected {ranking_count})")
+        all_issues.append(f"[ERROR] Wrong number of items ({len(ranked_items)}, expected {ranking_count})")
 
     for i, item in enumerate(ranked_items):
         # Check narration
@@ -146,9 +146,9 @@ def generate_quality_report(script: Dict, ranking_count: int) -> str:
     report += f"Item Count: {len(script.get('ranked_items', []))}/{ranking_count}\n\n"
 
     if is_valid:
-        report += "✅ PASSED - Script meets all quality standards!\n"
+        report += "[OK] PASSED - Script meets all quality standards!\n"
     else:
-        report += f"❌ FAILED - Found {len(issues)} issues:\n\n"
+        report += f"[ERROR] FAILED - Found {len(issues)} issues:\n\n"
         for i, issue in enumerate(issues, 1):
             report += f"{i}. {issue}\n"
 

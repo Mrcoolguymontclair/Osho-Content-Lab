@@ -190,14 +190,14 @@ class TitleThumbnailOptimizer:
         # Check for ALL CAPS
         if title.isupper():
             score += 20
-            reasons.append("✅ ALL CAPS (proven to increase CTR)")
+            reasons.append("[OK] ALL CAPS (proven to increase CTR)")
         else:
             suggestions.append("Use ALL CAPS for higher engagement")
 
         # Check for specific numbers
         if re.search(r'\b(10|5|20|7)\b', title):
             score += 15
-            reasons.append("✅ Specific number (10, 5, etc.)")
+            reasons.append("[OK] Specific number (10, 5, etc.)")
         else:
             suggestions.append("Add specific number (TOP 10, not TOP FIVE)")
 
@@ -205,32 +205,32 @@ class TitleThumbnailOptimizer:
         power_words_found = [w for w in self.power_words if w in title.upper()]
         if power_words_found:
             score += 15
-            reasons.append(f"✅ Power words: {', '.join(power_words_found[:2])}")
+            reasons.append(f"[OK] Power words: {', '.join(power_words_found[:2])}")
         else:
             suggestions.append(f"Add power words: {', '.join(self.power_words[:3])}")
 
         # Check for exclamation
         if title.endswith('!'):
             score += 10
-            reasons.append("✅ Ends with exclamation")
+            reasons.append("[OK] Ends with exclamation")
         else:
             suggestions.append("End with ! for excitement")
 
         # Check for "RANKED"
         if 'RANKED' in title.upper():
             score += 15
-            reasons.append("✅ Contains 'RANKED' (proven format)")
+            reasons.append("[OK] Contains 'RANKED' (proven format)")
 
         # Check for superlatives
         superlatives = ['MOST', 'BEST', 'WORST', 'EXTREME', 'ULTIMATE']
         if any(s in title.upper() for s in superlatives):
             score += 10
-            reasons.append("✅ Uses superlatives")
+            reasons.append("[OK] Uses superlatives")
 
         # Check length (50-70 chars is optimal for YouTube)
         if 50 <= len(title) <= 70:
             score += 15
-            reasons.append("✅ Optimal length (50-70 chars)")
+            reasons.append("[OK] Optimal length (50-70 chars)")
         elif len(title) < 50:
             suggestions.append("Title too short - add more context")
         else:
@@ -288,13 +288,13 @@ class TitleThumbnailOptimizer:
 # Testing
 if __name__ == "__main__":
     print("=" * 70)
-    print("🎯 TITLE & THUMBNAIL OPTIMIZER")
+    print("[TARGET] TITLE & THUMBNAIL OPTIMIZER")
     print("=" * 70)
 
     optimizer = TitleThumbnailOptimizer()
 
     # Test 1: Generate optimized title
-    print("\n1️⃣ Title Optimization:")
+    print("\n1⃣ Title Optimization:")
     topics = [
         "Roller Coasters",
         "Natural Wonders",
@@ -306,7 +306,7 @@ if __name__ == "__main__":
         print(f"   {topic:20s} → {title}")
 
     # Test 2: Analyze existing titles
-    print("\n2️⃣ Title Analysis:")
+    print("\n2⃣ Title Analysis:")
     test_titles = [
         "TOP 10 DEADLIEST ROLLER COASTERS RANKED!",  # Good
         "top 5 roller coasters",  # Bad
@@ -318,19 +318,19 @@ if __name__ == "__main__":
         print(f"\n   Title: {title}")
         print(f"   Score: {analysis['score']}/100 (Grade: {analysis['grade']})")
         if analysis['reasons']:
-            print(f"   ✅ Strengths: {analysis['reasons'][0]}")
+            print(f"   [OK] Strengths: {analysis['reasons'][0]}")
         if analysis['suggestions']:
-            print(f"   💡 Improve: {analysis['suggestions'][0]}")
+            print(f"   [IDEA] Improve: {analysis['suggestions'][0]}")
 
     # Test 3: Thumbnail text generation
-    print("\n3️⃣ Thumbnail Text:")
+    print("\n3⃣ Thumbnail Text:")
     title = "TOP 10 MOST EXTREME UNDERWATER CAVERNS RANKED!"
     for rank in [5, 3, 1]:
         thumb_text = optimizer.generate_thumbnail_text(title, rank=rank)
         print(f"   Rank #{rank}: {thumb_text}")
 
     # Test 4: Auto-improve bad title
-    print("\n4️⃣ Title Improvement:")
+    print("\n4⃣ Title Improvement:")
     bad_title = "ranking some interesting roller coasters"
     improved = optimizer.improve_title(bad_title)
     print(f"   Before: {bad_title}")
@@ -338,5 +338,5 @@ if __name__ == "__main__":
     analysis = optimizer.analyze_title_effectiveness(improved)
     print(f"   Score:  {analysis['score']}/100 (Grade: {analysis['grade']})")
 
-    print("\n✅ Title & thumbnail optimization ready!")
+    print("\n[OK] Title & thumbnail optimization ready!")
     print("\n" + "=" * 70)

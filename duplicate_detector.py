@@ -389,4 +389,4 @@ if __name__ == "__main__":
         for item in stats['most_duplicated'][:5]:
             print(f"    - {item['title']} (x{item['count']})")
 
-    print("\n✅ Tests complete!")
+    print("\n[OK] Tests complete!")

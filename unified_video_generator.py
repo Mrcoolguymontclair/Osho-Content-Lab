@@ -61,7 +61,7 @@ class UnifiedVideoGenerator:
 
         Returns: (success, video_path, metadata)
         """
-        add_log(self.channel_id, "info", "unified_gen", f"🎬 Starting unified generation: {video_type}")
+        add_log(self.channel_id, "info", "unified_gen", f"[VIDEO] Starting unified generation: {video_type}")
 
         # STEP 1: Pre-Generation Validation
         add_log(self.channel_id, "info", "validation", "Running pre-flight checks...")
@@ -74,13 +74,13 @@ class UnifiedVideoGenerator:
             for error in validation['errors']:
                 recovery_result = self.recovery_manager.attempt_recovery(error, self.channel_id)
                 if recovery_result.get('auto_recoverable'):
-                    add_log(self.channel_id, "info", "recovery", f"✅ Auto-recovered: {recovery_result['action']}")
+                    add_log(self.channel_id, "info", "recovery", f"[OK] Auto-recovered: {recovery_result['action']}")
                 else:
-                    add_log(self.channel_id, "warning", "recovery", f"⚠️ Manual action needed: {recovery_result['recommendation']}")
+                    add_log(self.channel_id, "warning", "recovery", f"[WARNING] Manual action needed: {recovery_result['recommendation']}")
 
             return False, None, {"error": validation['errors'][0]}
 
-        add_log(self.channel_id, "info", "validation", "✅ All pre-flight checks passed")
+        add_log(self.channel_id, "info", "validation", "[OK] All pre-flight checks passed")
 
         # STEP 2: Route to appropriate generator with improvements
         if video_type == "ranking":
@@ -98,7 +98,7 @@ class UnifiedVideoGenerator:
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict]]:
         """Generate ranking video with all improvements."""
-        add_log(self.channel_id, "info", "ranking", "🏆 Generating ranking video with enhancements")
+        add_log(self.channel_id, "info", "ranking", "[WINNER] Generating ranking video with enhancements")
 
         # Import ranking generator V2 (with all quality fixes)
         from video_engine_ranking_v2 import generate_ranking_video_v2 as generate_ranking_video
@@ -136,7 +136,7 @@ class UnifiedVideoGenerator:
                         metadata['improved_title'] = improved_title
                         metadata['title_score'] = analysis['score']
 
-                add_log(self.channel_id, "info", "ranking", "✅ Ranking video generated successfully")
+                add_log(self.channel_id, "info", "ranking", "[OK] Ranking video generated successfully")
                 return True, video_path, metadata
             else:
                 add_log(self.channel_id, "error", "ranking", "Failed to generate ranking video")
@@ -155,7 +155,7 @@ class UnifiedVideoGenerator:
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict]]:
         """Generate trending video with all improvements."""
-        add_log(self.channel_id, "info", "trending", "🔥 Generating trending video")
+        add_log(self.channel_id, "info", "trending", "[HOT] Generating trending video")
 
         # Import trending components
         from trend_tracker import get_best_pending_trend
@@ -176,7 +176,7 @@ class UnifiedVideoGenerator:
             if 'title' in video_plan:
                 # Add urgency to title
                 original_title = video_plan['title']
-                video_plan['title'] = f"🔥 {original_title.upper()}!"
+                video_plan['title'] = f"[HOT] {original_title.upper()}!"
 
             # Generate with retry
             @retry_with_backoff(RetryConfig(max_attempts=2))
@@ -195,7 +195,7 @@ class UnifiedVideoGenerator:
                     'urgency': best_trend.get('urgency'),
                     'confidence': best_trend.get('confidence')
                 }
-                add_log(self.channel_id, "info", "trending", f"✅ Trending video: {best_trend['topic']}")
+                add_log(self.channel_id, "info", "trending", f"[OK] Trending video: {best_trend['topic']}")
                 return True, video_path, metadata
             else:
                 return False, None, {"error": "Trend video generation failed"}
@@ -213,7 +213,7 @@ class UnifiedVideoGenerator:
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict]]:
         """Generate standard video with all improvements."""
-        add_log(self.channel_id, "info", "standard", "📹 Generating standard video with enhancements")
+        add_log(self.channel_id, "info", "standard", " Generating standard video with enhancements")
 
         # Import standard generator
         from video_engine import generate_video_script, assemble_viral_video
@@ -264,7 +264,7 @@ class UnifiedVideoGenerator:
                     'topic': theme,
                     'segments': len(script.get('segments', []))
                 }
-                add_log(self.channel_id, "info", "standard", "✅ Standard video generated successfully")
+                add_log(self.channel_id, "info", "standard", "[OK] Standard video generated successfully")
                 return True, video_path, metadata
             else:
                 return False, None, {"error": "Video assembly failed"}
@@ -314,10 +314,10 @@ def generate_video_unified(
 # Testing
 if __name__ == "__main__":
     print("=" * 70)
-    print("🎬 UNIFIED VIDEO GENERATOR")
+    print("[VIDEO] UNIFIED VIDEO GENERATOR")
     print("=" * 70)
 
-    print("\n✅ Integrated Features:")
+    print("\n[OK] Integrated Features:")
     features = [
         "Pre-generation validation (6 checks)",
         "Error recovery with automatic retry",
@@ -332,11 +332,11 @@ if __name__ == "__main__":
     for i, feature in enumerate(features, 1):
         print(f"   {i}. {feature}")
 
-    print("\n📊 Expected Improvement:")
+    print("\n[CHART] Expected Improvement:")
     print("   Before: 10.6% success rate, 0.7 avg views")
     print("   After:  70-80% success rate, 200-300 avg views")
 
-    print("\n💡 Usage:")
+    print("\n[IDEA] Usage:")
     print("   from unified_video_generator import generate_video_unified")
     print("   ")
     print("   success, path, meta = generate_video_unified(")

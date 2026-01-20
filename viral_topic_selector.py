@@ -245,8 +245,8 @@ if __name__ == "__main__":
 
     print("\n" + "=" * 70)
     print("\nThese topics have:")
-    print("✅ Human interest (danger, mystery, curiosity)")
-    print("✅ Emotional hooks (fear, surprise, shock)")
-    print("✅ Click-worthy titles")
-    print("✅ Variety (not all landscapes!)")
-    print("\n❌ AVOID: Boring landscapes, formations, geological features")
+    print("[OK] Human interest (danger, mystery, curiosity)")
+    print("[OK] Emotional hooks (fear, surprise, shock)")
+    print("[OK] Click-worthy titles")
+    print("[OK] Variety (not all landscapes!)")
+    print("\n[ERROR] AVOID: Boring landscapes, formations, geological features")
