@@ -15,7 +15,7 @@ Autonomous AI system for generating and posting YouTube Shorts 24/7.
 # Start system
 python3 daemon_keeper.py &
 
-# Check status  
+# Check status
 tail -f daemon_stdout.log
 
 # Stop system
@@ -23,7 +23,38 @@ pkill -f daemon_keeper
 
 # UI Dashboard
 streamlit run new_vid_gen.py
+
+# 🔥 Cook up a video instantly (on-demand)
+python3 cook_up.py
 ```
+
+## Cook Up - On-Demand Video Generation
+
+Generate and upload a video **instantly** without waiting for the daemon schedule:
+
+```bash
+# Generate and upload immediately
+python3 cook_up.py
+
+# Use specific channel
+python3 cook_up.py --channel "Osho Wisdom"
+
+# Generate only (don't upload)
+python3 cook_up.py --no-upload
+```
+
+**Features:**
+- 🎬 Uses V2 engine (same quality as daemon)
+- 🤖 AI-powered viral topic selection
+- 🖼️ Auto-generates thumbnails
+- 📤 Uploads to YouTube immediately
+- ⚡ Takes ~2-3 minutes total
+
+**Perfect for:**
+- Testing new video ideas
+- Responding to trending topics quickly
+- Manually boosting content schedule
+- Emergency content needs
 
 ## What Was Fixed (Jan 14, 2026)
 
@@ -57,6 +88,7 @@ streamlit run new_vid_gen.py
 ### Core
 - `youtube_daemon.py` - Main daemon
 - `daemon_keeper.py` - Auto-restart wrapper
+- `cook_up.py` - On-demand video generator
 - `auth_manager.py` - Bulletproof auth
 - `channel_manager.py` - Database
 
