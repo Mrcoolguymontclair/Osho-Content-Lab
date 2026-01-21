@@ -335,16 +335,26 @@ def download_video_clip(
     duration: float = 6.0,
     channel_id: int = 0,
     retry_count: int = 0,
-    max_retries: int = 20
-) -> Tuple[bool, Optional[str]]:
+    max_retries: int = 20,
+    exclude_video_ids: Optional[set] = None
+) -> Tuple[bool, Optional[str], Optional[int]]:
     """
     Download video clip from Pexels.
 
     CRITICAL: 20-retry with alternative queries (from our testing)
     If fails, generate new search queries with Groq.
+
+    Args:
+        exclude_video_ids: Set of Pexels video IDs to skip (prevents repeats in same session)
+
+    Returns:
+        (success, error_message, video_id)
     """
     if not PEXELS_API_KEY:
-        return False, "Pexels API key not configured"
+        return False, "Pexels API key not configured", None
+
+    if exclude_video_ids is None:
+        exclude_video_ids = set()
 
     try:
         log_dev("Clip", f"Downloading: '{search_query}' (attempt {retry_count + 1}/{max_retries})")
@@ -367,13 +377,30 @@ def download_video_clip(
             if retry_count < max_retries - 1:
                 alternative_query = generate_alternative_search_query(search_query, channel_id)
                 time.sleep(1)
-                return download_video_clip(alternative_query, output_path, duration, channel_id, retry_count + 1, max_retries)
+                return download_video_clip(alternative_query, output_path, duration, channel_id, retry_count + 1, max_retries, exclude_video_ids)
             else:
                 raise Exception(f"No videos found for '{search_query}' after {max_retries} attempts")
 
-        # Find HD video file
-        video = data['videos'][retry_count % len(data['videos'])]  # Rotate through results
+        # Find HD video file that hasn't been used yet
+        video = None
         video_file = None
+
+        # Try to find a video that's not in the exclude list
+        for idx in range(len(data['videos'])):
+            candidate_video = data['videos'][idx]
+            video_id = candidate_video.get('id')
+
+            if video_id not in exclude_video_ids:
+                video = candidate_video
+                log_dev("Clip", f"Selected unused video ID {video_id} from Pexels")
+                break
+
+        # If all videos are excluded, use the first one (fallback)
+        if video is None:
+            video = data['videos'][0]
+            log_dev("Clip", f"Warning: All videos in results already used, reusing video ID {video.get('id')}")
+
+        video_id = video.get('id')
 
         for file in video['video_files']:
             if file.get('quality') == 'hd' and file.get('width', 0) <= 1920:
@@ -438,8 +465,8 @@ def download_video_clip(
         if not os.path.exists(output_path) or os.path.getsize(output_path) < 10000:
             raise Exception("Output file invalid")
 
-        log_to_db(channel_id, "info", "clip", f"Downloaded: {search_query}")
-        return True, None
+        log_to_db(channel_id, "info", "clip", f"Downloaded: {search_query} (video ID: {video_id})")
+        return True, None, video_id
 
     except Exception as e:
         error_msg = str(e)
@@ -449,9 +476,9 @@ def download_video_clip(
             # Generate alternative query and retry
             alternative_query = generate_alternative_search_query(search_query, channel_id)
             time.sleep(2)
-            return download_video_clip(alternative_query, output_path, duration, channel_id, retry_count + 1, max_retries)
+            return download_video_clip(alternative_query, output_path, duration, channel_id, retry_count + 1, max_retries, exclude_video_ids)
 
-        return False, f"Clip download failed after {max_retries} attempts"
+        return False, f"Clip download failed after {max_retries} attempts", None
 
 def generate_alternative_search_query(original_query: str, channel_id: int = 0) -> str:
     """Generate alternative search query using Groq when clip download fails"""
@@ -739,16 +766,20 @@ def assemble_viral_video(
         # =============================================================
         log_to_db(channel_id, "info", "assembly", "Step 2/10: Downloading video clips...")
         clip_files = []
+        used_video_ids = set()  # Track used videos to prevent repeats
 
         for i, seg in enumerate(segments):
             clip_path = os.path.join(output_dir, f"{base_name}_clip_{i}.mp4")
             # Use voiceover duration for clip (add 0.5s buffer for smooth transition)
             clip_duration = voiceover_durations[i] + 0.5
-            success, error = download_video_clip(seg['searchQuery'], clip_path, clip_duration, channel_id)
+            success, error, video_id = download_video_clip(seg['searchQuery'], clip_path, clip_duration, channel_id, exclude_video_ids=used_video_ids)
 
             if not success:
                 log_to_db(channel_id, "warning", "assembly", f"Clip {i+1} failed, continuing with others")
                 continue  # Skip failed clips, continue with others
+
+            if video_id:
+                used_video_ids.add(video_id)
 
             clip_files.append((clip_path, seg['narration']))
 

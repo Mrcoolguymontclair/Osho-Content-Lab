@@ -517,6 +517,7 @@ def assemble_ranking_video(
 
         clip_files = []
         clip_durations = []  # Track individual durations
+        used_video_ids = set()  # Track used videos to prevent repeats within this video
 
         for i, item in enumerate(ranked_items):
             clip_path = os.path.join(output_dir, f"{base_name}_clip_{item['rank']}.mp4")
@@ -527,15 +528,20 @@ def assemble_ranking_video(
 
             log_to_db(channel_id, "info", "assembly", f"Rank {item['rank']}: {clip_duration:.1f}s duration")
 
-            success, error = download_video_clip(
+            success, error, video_id = download_video_clip(
                 item['searchQuery'],
                 clip_path,
                 duration=clip_duration,  # Dynamic duration based on rank importance
-                channel_id=channel_id
+                channel_id=channel_id,
+                exclude_video_ids=used_video_ids
             )
 
             if not success:
                 return None, f"Clip {item['rank']} download failed: {error}"
+
+            if video_id:
+                used_video_ids.add(video_id)
+                log_to_db(channel_id, "info", "assembly", f"Added video ID {video_id} to exclusion list (total: {len(used_video_ids)})")
 
             clip_files.append(clip_path)
 

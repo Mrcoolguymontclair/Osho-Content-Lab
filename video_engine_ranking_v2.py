@@ -200,11 +200,21 @@ def download_engaging_clip(
     output_path: str,
     duration: float,
     channel_id: int = 0,
-    attempt: int = 1
-) -> Tuple[bool, Optional[str]]:
+    attempt: int = 1,
+    exclude_video_ids: Optional[set] = None
+) -> Tuple[bool, Optional[str], Optional[int]]:
     """
     Download high-quality, engaging video clips with better selection.
+
+    Args:
+        exclude_video_ids: Set of Pexels video IDs to skip (prevents repeats in same session)
+
+    Returns:
+        (success, error_message, video_id)
     """
+    if exclude_video_ids is None:
+        exclude_video_ids = set()
+
     try:
         log_to_db(channel_id, "info", "clip", f"Searching: '{search_query}' ({duration:.1f}s)")
 
@@ -234,14 +244,22 @@ def download_engaging_clip(
         videos = data.get('videos', [])
 
         if not videos:
-            return False, f"No clips found for '{search_query}'"
+            return False, f"No clips found for '{search_query}'", None
 
-        # Select best video (prioritize HD and duration match)
+        # Select best video (prioritize HD and duration match, excluding already-used videos)
         best_video = None
+        best_video_file = None
         best_score = -1
 
         for video in videos[:10]:  # Check top 10
+            video_id = video.get('id')
             video_files = video.get('video_files', [])
+
+            # Skip if video already used
+            if video_id in exclude_video_ids:
+                log_to_db(channel_id, "info", "clip", f"Skipping video ID {video_id} (already used)")
+                continue
+
             if not video_files:
                 continue
 
@@ -268,22 +286,27 @@ def download_engaging_clip(
 
             if score > best_score and hd_file:
                 best_score = score
-                best_video = hd_file
+                best_video = video
+                best_video_file = hd_file
 
         if not best_video:
-            # Fallback to first video
-            best_video = videos[0]['video_files'][0]
+            # Fallback to first video (even if already used)
+            best_video = videos[0]
+            best_video_file = videos[0]['video_files'][0]
+            log_dev("Clip", f"Warning: All videos in results already used, reusing video ID {best_video.get('id')}")
 
-        video_url = best_video.get('link')
+        video_id = best_video.get('id')
+
+        video_url = best_video_file.get('link')
         if not video_url:
-            return False, "No video URL found"
+            return False, "No video URL found", None
 
         # Download video
-        log_to_db(channel_id, "info", "clip", f"Downloading from Pexels (quality: {best_video.get('height', '?')}p)...")
+        log_to_db(channel_id, "info", "clip", f"Downloading from Pexels (video ID: {video_id}, quality: {best_video_file.get('height', '?')}p)...")
 
         vid_response = requests.get(video_url, stream=True, timeout=60)
         if vid_response.status_code != 200:
-            return False, f"Download failed: {vid_response.status_code}"
+            return False, f"Download failed: {vid_response.status_code}", None
 
         temp_path = output_path + ".temp"
         with open(temp_path, 'wb') as f:
@@ -303,17 +326,17 @@ def download_engaging_clip(
         os.remove(temp_path)
 
         if result.returncode != 0:
-            return False, f"Processing failed: {result.stderr.decode()}"
+            return False, f"Processing failed: {result.stderr.decode()}", None
 
         # Verify output
         if not os.path.exists(output_path) or os.path.getsize(output_path) < 50000:
-            return False, "Output file too small"
+            return False, "Output file too small", None
 
-        log_to_db(channel_id, "info", "clip", f"✓ Downloaded: {search_query[:40]}")
-        return True, None
+        log_to_db(channel_id, "info", "clip", f"✓ Downloaded: {search_query[:40]} (video ID: {video_id})")
+        return True, None, video_id
 
     except Exception as e:
-        return False, f"Clip download error: {str(e)}"
+        return False, f"Clip download error: {str(e)}", None
 
 # ==============================================================================
 # IMPROVED Audio Mixing (Perfect Sync)
@@ -638,25 +661,31 @@ def generate_ranking_video_v2(channel_config: Dict, use_strategy: bool = True) -
 
         log_to_db(channel_id, "info", "generation", f"✓ Generated {len(voiceover_files)} voiceovers")
 
-        # STEP 3: Download engaging clips
+        # STEP 3: Download engaging clips (with deduplication tracking)
         log_to_db(channel_id, "info", "generation", "Downloading clips...")
         clip_files = []
         clip_durations = []
+        used_video_ids = set()  # Track used videos to prevent repeats within this video
 
         for item in ranked_items:
             clip_path = os.path.join(output_dir, f"{base_name}_clip_{item['rank']}.mp4")
             clip_duration = get_pacing_for_rank(item['rank'], ranking_count, TOTAL_DURATION)
             clip_durations.append(clip_duration)
 
-            success, error = download_engaging_clip(
+            success, error, video_id = download_engaging_clip(
                 item['searchQuery'],
                 clip_path,
                 clip_duration,
-                channel_id
+                channel_id,
+                exclude_video_ids=used_video_ids
             )
 
             if not success:
                 return None, None, f"Clip download failed for rank {item['rank']}: {error}"
+
+            if video_id:
+                used_video_ids.add(video_id)
+                log_to_db(channel_id, "info", "generation", f"Added video ID {video_id} to exclusion list (total: {len(used_video_ids)})")
 
             clip_files.append(clip_path)
 
