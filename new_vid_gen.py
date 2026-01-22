@@ -608,6 +608,14 @@ def render_dashboard_tab(channel: dict):
 
 def home_page():
     """Home page - channel overview"""
+    # VERSION BANNER - Visible proof that new UI is loaded
+    st.markdown("""
+    <div style='background: #000000; color: #00ff00; padding: 15px; border: 3px solid #00ff00; margin-bottom: 20px; font-family: "Courier New", monospace; font-weight: bold; text-align: center;'>
+        ⚡⚡⚡ RETRO BLACK & WHITE UI v2.0 - LOADED ⚡⚡⚡<br/>
+        If you see orange background, press Ctrl+Shift+R to hard refresh!
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown("# ▓▓▓ OSHO CONTENT STUDIO ▓▓▓")
     st.markdown("```")
     st.markdown(">>> Multi-Channel Viral Content Engine")
