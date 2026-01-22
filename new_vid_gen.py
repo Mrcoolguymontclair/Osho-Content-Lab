@@ -922,6 +922,64 @@ def render_settings_tab(channel: dict):
 
     st.divider()
 
+    # AI Power Control
+    st.markdown("### 🧠 AI Control & Autonomy")
+    st.markdown("Control how much power the AI has over video generation decisions.")
+
+    with st.form("ai_power_settings"):
+        ai_power = st.slider(
+            "AI Power Level",
+            min_value=0,
+            max_value=100,
+            value=channel.get('ai_power_level', 50),
+            help="0 = Manual control only | 50 = Balanced AI assistance | 100 = Full AI autonomy"
+        )
+
+        # Show what each level means
+        if ai_power == 0:
+            st.info("🎛️ **Manual Mode**: AI provides suggestions only. You have full control over all decisions.")
+        elif ai_power < 25:
+            st.info("🤝 **Minimal AI**: AI suggestions available but rarely auto-applied. Mostly manual control.")
+        elif ai_power < 50:
+            st.info("💡 **AI-Assisted**: AI makes recommendations and applies low-risk improvements automatically.")
+        elif ai_power < 75:
+            st.info("🎯 **AI-Guided**: AI actively optimizes topics, timing, and content. Can block low-potential videos.")
+        elif ai_power < 100:
+            st.info("🚀 **High Autonomy**: AI has strong control over strategy, content selection, and posting schedule.")
+        else:
+            st.info("🤖 **Full AI Control**: AI makes all optimization decisions automatically. Maximum performance mode.")
+
+        st.markdown("**AI Powers at Current Level:**")
+        powers = []
+        if ai_power >= 20:
+            powers.append("✅ Analyzes performance and learns from results")
+        if ai_power >= 35:
+            powers.append("✅ Suggests optimal topics based on past success")
+        if ai_power >= 50:
+            powers.append("✅ Automatically adjusts posting intervals for best performance")
+        if ai_power >= 60:
+            powers.append("✅ Blocks videos predicted to perform poorly")
+        if ai_power >= 75:
+            powers.append("✅ Automatically selects winning content strategies")
+        if ai_power >= 90:
+            powers.append("✅ Full autonomous optimization of all parameters")
+
+        if powers:
+            for power in powers:
+                st.markdown(power)
+        else:
+            st.markdown("ℹ️ AI is in passive mode - no automatic actions")
+
+        ai_submit = st.form_submit_button("💾 Save AI Settings", use_container_width=True)
+
+        if ai_submit:
+            update_channel(channel['id'], ai_power_level=ai_power)
+            st.success(f"✅ AI Power Level set to {ai_power}/100")
+            time.sleep(1)
+            st.rerun()
+
+    st.divider()
+
     # YouTube Authentication
     st.markdown("###  YouTube Authentication")
 
@@ -1169,6 +1227,71 @@ def render_ai_insights_tab(channel: dict):
             st.metric("AI Confidence", "N/A")
 
     st.info("🔄 System runs every 6 hours automatically in the background")
+
+    # AI Power Level Display
+    ai_power = channel.get('ai_power_level', 50)
+    col_power1, col_power2 = st.columns([3, 1])
+    with col_power1:
+        st.progress(ai_power / 100, text=f"AI Power Level: {ai_power}/100")
+    with col_power2:
+        if ai_power < 25:
+            st.caption("🤝 Minimal AI")
+        elif ai_power < 50:
+            st.caption("💡 Assisted")
+        elif ai_power < 75:
+            st.caption("🎯 Guided")
+        elif ai_power < 100:
+            st.caption("🚀 High Autonomy")
+        else:
+            st.caption("🤖 Full Control")
+
+    st.divider()
+
+    # AI Activity Log
+    st.markdown("#### 📋 Recent AI Actions")
+
+    # Get AI-related logs from database
+    import sqlite3
+    conn_logs = sqlite3.connect('channels.db')
+    cursor_logs = conn_logs.cursor()
+
+    cursor_logs.execute("""
+        SELECT timestamp, level, category, message
+        FROM logs
+        WHERE channel_id = ?
+        AND (category IN ('prediction', 'strategy', 'blocked', 'ai', 'analytics'))
+        ORDER BY timestamp DESC
+        LIMIT 15
+    """, (channel['id'],))
+
+    ai_logs = cursor_logs.fetchall()
+    conn_logs.close()
+
+    if ai_logs:
+        for log in ai_logs:
+            timestamp, level, category, message = log
+            try:
+                from time_formatter import parse_time_to_chicago, format_time_chicago
+                log_time = parse_time_to_chicago(timestamp)
+                time_str = format_time_chicago(log_time, 'time_only')
+            except:
+                time_str = timestamp.split(' ')[1][:5]  # Get HH:MM
+
+            # Color code by category
+            if category == 'blocked':
+                st.warning(f"🚫 **{time_str}** - {message}")
+            elif category == 'prediction' and '✅ APPROVED' in message:
+                st.success(f"✅ **{time_str}** - {message}")
+            elif category == 'strategy':
+                st.info(f"🎯 **{time_str}** - {message}")
+            else:
+                st.caption(f"🤖 **{time_str}** - {message}")
+    else:
+        st.info("💭 No AI actions yet. AI will log decisions here as it works.")
+
+    # Refresh AI Activity button
+    if st.button("🔄 Refresh AI Activity", use_container_width=True):
+        st.rerun()
 
     st.divider()
 
