@@ -90,7 +90,7 @@ def get_video_stats_aggregated(channel_id: int):
 
 st.set_page_config(
     page_title="Osho Content Studio",
-    page_icon="🎥",
+    page_icon="▓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -98,97 +98,173 @@ st.set_page_config(
 # Initialize database
 init_database()
 
-# UI Preferences - Load from persistent file
-PREFS_FILE = 'ui_preferences.json'
-
-def load_ui_preferences():
-    """Load UI preferences from persistent file"""
-    if os.path.exists(PREFS_FILE):
-        try:
-            with open(PREFS_FILE, 'r') as f:
-                return json.load(f)
-        except:
-            pass
-    return {
-        'bg_color_1': '#ff0000',
-        'bg_color_2': '#000000',
-        'animation_speed': 20
+# Simple Black & White Retro UI - Terminal Style
+st.markdown("""
+<style>
+    /* Retro terminal black & white theme */
+    .stApp {
+        background-color: #000000;
+        color: #ffffff;
+        font-family: 'Courier New', monospace;
     }
 
-def save_ui_preferences(prefs):
-    """Save UI preferences to persistent file"""
-    try:
-        with open(PREFS_FILE, 'w') as f:
-            json.dump(prefs, f, indent=2)
-    except Exception as e:
-        st.error(f"Failed to save preferences: {e}")
+    /* All text white */
+    .stApp, .stApp * {
+        color: #ffffff !important;
+    }
 
-# Load preferences from file (persistent between sessions)
-prefs = load_ui_preferences()
+    /* Headers - bold white */
+    h1, h2, h3, h4, h5, h6 {
+        color: #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+        font-weight: bold !important;
+        border-bottom: 2px solid #ffffff;
+        padding-bottom: 5px;
+    }
 
-# Initialize session state from saved preferences if not already set
-if 'bg_color_1' not in st.session_state:
-    st.session_state.bg_color_1 = prefs['bg_color_1']
-if 'bg_color_2' not in st.session_state:
-    st.session_state.bg_color_2 = prefs['bg_color_2']
-if 'animation_speed' not in st.session_state:
-    st.session_state.animation_speed = prefs['animation_speed']
+    /* Buttons - white border, black bg */
+    .stButton > button {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: 2px solid #ffffff !important;
+        border-radius: 0px !important;
+        font-family: 'Courier New', monospace !important;
+        font-weight: bold !important;
+        padding: 10px 20px !important;
+    }
 
-# Get current values
-bg_color_1 = st.session_state.get('bg_color_1', '#ff0000')
-bg_color_2 = st.session_state.get('bg_color_2', '#000000')
-animation_speed = st.session_state.get('animation_speed', 20)
+    .stButton > button:hover {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
 
-# Animated gradient background with customizable colors
-st.markdown(f"""
-<style>
-    /* Animated gradient background */
-    @keyframes gradientShift {{
-        0% {{
-            background-position: 0% 50%;
-        }}
-        50% {{
-            background-position: 100% 50%;
-        }}
-        100% {{
-            background-position: 0% 50%;
-        }}
-    }}
+    /* Primary buttons - inverted */
+    .stButton > button[kind="primary"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
 
-    .stApp {{
-        background: linear-gradient(
-            -45deg,
-            {bg_color_1} 0%,
-            {bg_color_2} 25%,
-            {bg_color_1} 50%,
-            {bg_color_2} 75%,
-            {bg_color_1} 100%
-        );
-        background-size: 400% 400%;
-        animation: gradientShift {animation_speed}s ease infinite;
-    }}
+    .stButton > button[kind="primary"]:hover {
+        background-color: #cccccc !important;
+    }
 
-    /* Hide the default Streamlit balloons/confetti */
-    [data-testid="stStatusWidget"] {{
-        display: none;
-    }}
+    /* Input fields */
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div > select {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: 2px solid #ffffff !important;
+        border-radius: 0px !important;
+        font-family: 'Courier New', monospace !important;
+    }
 
-    /* Customize the running indicator in top right */
-    .stApp > header [data-testid="stDecoration"] {{
-        display: none;
-    }}
+    /* Metric containers */
+    [data-testid="stMetricValue"] {
+        color: #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 32px !important;
+        font-weight: bold !important;
+    }
 
-    /* Make spinner cleaner */
-    .stSpinner > div {{
-        border-color: #ff4b4b transparent transparent transparent !important;
-    }}
+    [data-testid="stMetricLabel"] {
+        color: #cccccc !important;
+        font-family: 'Courier New', monospace !important;
+    }
 
-    /* Style the color pickers and controls */
-    .stColorPicker {{
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
+    /* Dividers */
+    hr {
+        border-color: #ffffff !important;
+        border-width: 1px !important;
+    }
+
+    /* Info/Success/Warning/Error boxes */
+    .stAlert {
+        background-color: #000000 !important;
+        border: 2px solid #ffffff !important;
+        border-radius: 0px !important;
+        color: #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+    }
+
+    /* Tables */
+    table {
+        border: 2px solid #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+    }
+
+    th, td {
+        border: 1px solid #ffffff !important;
+        color: #ffffff !important;
+    }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #000000 !important;
+        border-right: 2px solid #ffffff !important;
+    }
+
+    /* Progress bars */
+    .stProgress > div > div > div {
+        background-color: #ffffff !important;
+    }
+
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        background-color: #000000 !important;
+        border: 2px solid #ffffff !important;
+        border-radius: 0px !important;
+        color: #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    /* Expanders */
+    .streamlit-expanderHeader {
+        background-color: #000000 !important;
+        border: 2px solid #ffffff !important;
+        border-radius: 0px !important;
+        color: #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+    }
+
+    /* Forms */
+    .stForm {
+        border: 2px solid #ffffff !important;
+        border-radius: 0px !important;
+        padding: 20px !important;
+    }
+
+    /* Columns */
+    [data-testid="column"] {
+        border: 1px solid #444444;
         padding: 10px;
-    }}
+    }
+
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Captions - gray text */
+    .stCaption {
+        color: #cccccc !important;
+    }
+
+    /* Links */
+    a {
+        color: #ffffff !important;
+        text-decoration: underline !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -517,20 +593,23 @@ def render_dashboard_tab(channel: dict):
 
 def home_page():
     """Home page - channel overview"""
-    st.title("🎥 Osho Content Studio")
-    st.markdown("### Multi-Channel Viral Content Engine")
+    st.markdown("# ▓▓▓ OSHO CONTENT STUDIO ▓▓▓")
+    st.markdown("```")
+    st.markdown(">>> Multi-Channel Viral Content Engine")
+    st.markdown(">>> System Status Monitor")
+    st.markdown("```")
 
     # Daemon status
     col1, col2, col3 = st.columns([2, 1, 1])
 
     with col1:
         if is_daemon_running():
-            st.success("✅ Automation Engine RUNNING")
+            st.success("[ AUTOMATION ENGINE: ● RUNNING ]")
         else:
-            st.error("⚠️ Automation Engine STOPPED")
+            st.error("[ AUTOMATION ENGINE: ○ STOPPED ]")
 
     with col2:
-        if st.button("[LAUNCH] Start Engine"):
+        if st.button("▶ START", use_container_width=True):
             if start_daemon():
                 st.success("Started!")
                 st.rerun()
@@ -538,14 +617,14 @@ def home_page():
                 st.error("Failed to start")
 
     with col3:
-        if st.button("[STOP] Stop Engine"):
+        if st.button("■ STOP", use_container_width=True):
             if stop_daemon():
                 st.success("Stopped!")
                 st.rerun()
             else:
                 st.error("Failed to stop")
 
-    st.divider()
+    st.markdown("---")
 
     # Channels
     channels = get_all_channels()
@@ -557,7 +636,7 @@ def home_page():
             create_channel_form()
     else:
         # Show channels
-        st.markdown("### Your Channels")
+        st.markdown("### ▓ ACTIVE CHANNELS")
 
         for channel in channels:
             render_channel_card(channel)
@@ -615,40 +694,20 @@ def channel_page(channel_id: int):
             st.rerun()
         return
 
-    # Header with profile picture
-    header_col1, header_col2, header_col3 = st.columns([1, 4, 1])
+    # Header - retro terminal style
+    header_col1, header_col2 = st.columns([4, 1])
 
     with header_col1:
-        # Try to get YouTube channel profile picture
-        try:
-            if is_channel_authenticated(channel['name']):
-                yt_info = get_youtube_channel_info_cached(channel['name'])
-                if yt_info and yt_info.get('profile_picture'):
-                    st.image(yt_info['profile_picture'], width=100)
-                else:
-                    # Fallback icon if no thumbnail
-                    st.markdown("### 🎥")
-            else:
-                # Not authenticated - show default icon
-                st.markdown("### 🎥")
-        except Exception as e:
-            # Error getting profile - show default
-            st.markdown("### 🎥")
-            st.caption("⚠️ Auth needed")
+        st.markdown(f"# ▓ {channel['name'].upper()}")
+        st.markdown("```")
+        st.markdown(f">>> CHANNEL ID: {channel['id']:04d}")
+        st.markdown(f">>> THEME: {channel['theme']}")
+        auth_status = "AUTHENTICATED" if is_channel_authenticated(channel['name']) else "NOT AUTHENTICATED"
+        st.markdown(f">>> STATUS: {auth_status}")
+        st.markdown("```")
 
     with header_col2:
-        st.title(channel['name'])
-        # Show channel handle if available
-        try:
-            if is_channel_authenticated(channel['name']):
-                yt_info = get_youtube_channel_info_cached(channel['name'])
-                if yt_info and 'title' in yt_info:
-                    st.caption(f"@{yt_info.get('custom_url', yt_info['title'])}")
-        except:
-            pass
-
-    with header_col3:
-        if st.button("← Home"):
+        if st.button("◄◄ HOME", use_container_width=True):
             st.session_state.current_channel = None
             st.rerun()
 
@@ -700,35 +759,35 @@ def channel_page(channel_id: int):
     if 'active_tab' not in st.session_state:
         st.session_state.active_tab = "Dashboard"
 
-    # Tab buttons - optimized to avoid unnecessary reruns
+    # Tab buttons - retro style
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
-        if st.button("📊 Dashboard", use_container_width=True, type="primary" if st.session_state.active_tab == "Dashboard" else "secondary"):
+        if st.button("[DASH]", use_container_width=True, type="primary" if st.session_state.active_tab == "Dashboard" else "secondary"):
             if st.session_state.active_tab != "Dashboard":
                 st.session_state.active_tab = "Dashboard"
                 st.rerun()
     with col2:
-        if st.button("⚙️ Settings", use_container_width=True, type="primary" if st.session_state.active_tab == "Settings" else "secondary"):
+        if st.button("[SETUP]", use_container_width=True, type="primary" if st.session_state.active_tab == "Settings" else "secondary"):
             if st.session_state.active_tab != "Settings":
                 st.session_state.active_tab = "Settings"
                 st.rerun()
     with col3:
-        if st.button("🧠 AI Insights", use_container_width=True, type="primary" if st.session_state.active_tab == "AI" else "secondary"):
+        if st.button("[AI]", use_container_width=True, type="primary" if st.session_state.active_tab == "AI" else "secondary"):
             if st.session_state.active_tab != "AI":
                 st.session_state.active_tab = "AI"
                 st.rerun()
     with col4:
-        if st.button("📈 Analytics", use_container_width=True, type="primary" if st.session_state.active_tab == "Analytics" else "secondary"):
+        if st.button("[STATS]", use_container_width=True, type="primary" if st.session_state.active_tab == "Analytics" else "secondary"):
             if st.session_state.active_tab != "Analytics":
                 st.session_state.active_tab = "Analytics"
                 st.rerun()
     with col5:
-        if st.button("📝 Status & Logs", use_container_width=True, type="primary" if st.session_state.active_tab == "Status" else "secondary"):
+        if st.button("[LOGS]", use_container_width=True, type="primary" if st.session_state.active_tab == "Status" else "secondary"):
             if st.session_state.active_tab != "Status":
                 st.session_state.active_tab = "Status"
                 st.rerun()
     with col6:
-        if st.button("🎥 Videos", use_container_width=True, type="primary" if st.session_state.active_tab == "Videos" else "secondary"):
+        if st.button("[VIDS]", use_container_width=True, type="primary" if st.session_state.active_tab == "Videos" else "secondary"):
             if st.session_state.active_tab != "Videos":
                 st.session_state.active_tab = "Videos"
                 st.rerun()
@@ -751,105 +810,9 @@ def channel_page(channel_id: int):
 
 def render_settings_tab(channel: dict):
     """Channel settings tab"""
-    st.markdown("### Channel Settings")
-
-    # UI Theme Customization (above channel settings)
-    st.markdown("### 🎨 UI Theme Customization")
-
-    theme_col1, theme_col2, theme_col3 = st.columns(3)
-
-    with theme_col1:
-        new_color_1 = st.color_picker(
-            "Primary Color",
-            value=st.session_state.get('bg_color_1', '#ff0000'),
-            help="First gradient color"
-        )
-
-    with theme_col2:
-        new_color_2 = st.color_picker(
-            "Secondary Color",
-            value=st.session_state.get('bg_color_2', '#000000'),
-            help="Second gradient color"
-        )
-
-    with theme_col3:
-        new_speed = st.slider(
-            "Animation Speed (seconds)",
-            min_value=5,
-            max_value=60,
-            value=st.session_state.get('animation_speed', 20),
-            help="How fast the gradient moves (lower = faster)"
-        )
-
-    if (new_color_1 != st.session_state.get('bg_color_1') or
-        new_color_2 != st.session_state.get('bg_color_2') or
-        new_speed != st.session_state.get('animation_speed')):
-        st.session_state.bg_color_1 = new_color_1
-        st.session_state.bg_color_2 = new_color_2
-        st.session_state.animation_speed = new_speed
-        # Save to persistent file
-        save_ui_preferences({
-            'bg_color_1': new_color_1,
-            'bg_color_2': new_color_2,
-            'animation_speed': new_speed
-        })
-        st.rerun()
-
-    # Preset themes
-    st.markdown("**Quick Presets:**")
-    preset_col1, preset_col2, preset_col3, preset_col4 = st.columns(4)
-
-    with preset_col1:
-        if st.button(" Red-Black (Default)", use_container_width=True):
-            st.session_state.bg_color_1 = '#ff0000'
-            st.session_state.bg_color_2 = '#000000'
-            st.session_state.animation_speed = 20
-            save_ui_preferences({
-                'bg_color_1': '#ff0000',
-                'bg_color_2': '#000000',
-                'animation_speed': 20
-            })
-            st.rerun()
-
-    with preset_col2:
-        if st.button(" Blue-Purple", use_container_width=True):
-            st.session_state.bg_color_1 = '#3b82f6'
-            st.session_state.bg_color_2 = '#8b5cf6'
-            st.session_state.animation_speed = 20
-            save_ui_preferences({
-                'bg_color_1': '#3b82f6',
-                'bg_color_2': '#8b5cf6',
-                'animation_speed': 20
-            })
-            st.rerun()
-
-    with preset_col3:
-        if st.button(" Green-Teal", use_container_width=True):
-            st.session_state.bg_color_1 = '#10b981'
-            st.session_state.bg_color_2 = '#06b6d4'
-            st.session_state.animation_speed = 20
-            save_ui_preferences({
-                'bg_color_1': '#10b981',
-                'bg_color_2': '#06b6d4',
-                'animation_speed': 20
-            })
-            st.rerun()
-
-    with preset_col4:
-        if st.button(" Gold-Orange", use_container_width=True):
-            st.session_state.bg_color_1 = '#f59e0b'
-            st.session_state.bg_color_2 = '#ef4444'
-            st.session_state.animation_speed = 20
-            save_ui_preferences({
-                'bg_color_1': '#f59e0b',
-                'bg_color_2': '#ef4444',
-                'animation_speed': 20
-            })
-            st.rerun()
-
-    st.divider()
-
-    st.markdown("###  Video Settings")
+    st.markdown("### ▓ CHANNEL SETTINGS")
+    st.markdown("---")
+    st.markdown("### ▓ VIDEO CONFIGURATION")
 
     with st.form("channel_settings"):
         col1, col2 = st.columns(2)
