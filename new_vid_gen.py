@@ -95,23 +95,38 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Force browser to reload CSS (cache busting)
+st.markdown("""
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+""", unsafe_allow_html=True)
+
 # Initialize database
 init_database()
 
-# Simple Black & White Retro UI - Terminal Style
-st.markdown("""
-<style>
-    /* Retro terminal black & white theme */
-    .stApp {
-        background-color: #000000;
-        color: #ffffff;
-        font-family: 'Courier New', monospace;
-    }
+# Force CSS reload by adding version number
+CSS_VERSION = "v2.0.0"
 
-    /* All text white */
-    .stApp, .stApp * {
+# Simple Black & White Retro UI - Terminal Style
+st.markdown(f"""
+<style data-version="{CSS_VERSION}">
+    /* Retro terminal black & white theme */
+    .stApp {{
+        background-color: #000000 !important;
         color: #ffffff !important;
-    }
+        font-family: 'Courier New', monospace !important;
+    }}
+
+    /* Force all backgrounds black */
+    .main, .block-container, [data-testid="stAppViewContainer"] {{
+        background-color: #000000 !important;
+    }}
+
+    /* All text white - stronger selectors */
+    .stApp *, .stApp, h1, h2, h3, h4, h5, h6, p, span, div, label, input {{
+        color: #ffffff !important;
+    }}
 
     /* Headers - bold white */
     h1, h2, h3, h4, h5, h6 {
