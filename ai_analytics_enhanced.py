@@ -25,8 +25,11 @@ import toml
 from channel_manager import get_channel_videos, get_channel, add_log
 
 # Initialize Groq
-secrets = toml.load('.streamlit/secrets.toml')
-groq_client = Groq(api_key=secrets.get('GROQ_API_KEY')) if secrets.get('GROQ_API_KEY') else None
+try:
+    secrets = toml.load('.streamlit/secrets.toml')
+    groq_client = Groq(api_key=secrets.get('GROQ_API_KEY')) if secrets.get('GROQ_API_KEY') else None
+except FileNotFoundError:
+    groq_client = None
 
 
 # ==============================================================================
@@ -119,7 +122,7 @@ RULES:
 - Check if it avoids failed patterns
 - Be strict: only generate videos with >40% predicted success"""
 
-        response = groq_client.chat_completions_create(
+        response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,  # Low temp for consistent predictions
@@ -135,7 +138,7 @@ RULES:
         prediction = json.loads(content.strip())
 
         # Log prediction
-        verdict = "[OK] APPROVED" if prediction['should_generate'] else "[ERROR] BLOCKED"
+        verdict = "✅ APPROVED" if prediction['should_generate'] else "❌ BLOCKED"
         add_log(channel_id, "info", "prediction",
                f"{verdict} '{title}' - Score: {prediction['predicted_score']}/100")
 
@@ -491,7 +494,7 @@ if __name__ == "__main__":
         prediction = predict_video_performance(title, topic, channel_id)
         print(f"\nTitle: {title}")
         print(f"  Score: {prediction['predicted_score']}/100")
-        print(f"  Should Generate: {'[OK] YES' if prediction['should_generate'] else '[ERROR] NO'}")
+        print(f"  Should Generate: {'✅ YES' if prediction['should_generate'] else '❌ NO'}")
         print(f"  Risk: {prediction.get('risk_level', 'unknown')}")
 
     # Test 2: Real-time strategy adaptation
@@ -510,4 +513,4 @@ if __name__ == "__main__":
     config = get_video_generation_config(channel_id)
     print(json.dumps(config, indent=2))
 
-    print("\n[OK] All tests complete!")
+    print("\n✅ All tests complete!")

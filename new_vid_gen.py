@@ -90,7 +90,7 @@ def get_video_stats_aggregated(channel_id: int):
 
 st.set_page_config(
     page_title="Osho Content Studio",
-    page_icon="[VIDEO]",
+    page_icon="🎥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -278,11 +278,11 @@ def render_channel_card(channel: dict):
                     if yt_info and yt_info.get('profile_picture'):
                         st.image(yt_info['profile_picture'], width=60)
                     else:
-                        st.markdown("### [VIDEO]")
+                        st.markdown("### 🎥")
                 else:
-                    st.markdown("### [VIDEO]")
+                    st.markdown("### 🎥")
             except:
-                st.markdown("### [VIDEO]")
+                st.markdown("### 🎥")
 
         with col2:
             st.markdown(f"### {channel['name']}")
@@ -334,7 +334,7 @@ def render_log_entry(log: dict):
 
 def render_dashboard_tab(channel: dict):
     """Dashboard tab - Channel overview with profile and recent videos"""
-    st.markdown("### [CHART] Channel Dashboard")
+    st.markdown("### 📊 Channel Dashboard")
 
     # Channel Info Section
     col1, col2 = st.columns([1, 3])
@@ -347,13 +347,13 @@ def render_dashboard_tab(channel: dict):
                 if channel_info and channel_info.get('profile_picture'):
                     st.image(channel_info['profile_picture'], width=150)
                 else:
-                    st.markdown("### [VIDEO]")
+                    st.markdown("### 🎥")
                     st.caption("Re-auth needed")
             else:
-                st.markdown("### [VIDEO]")
+                st.markdown("### 🎥")
                 st.caption("Not authenticated")
         except Exception as e:
-            st.markdown("### [VIDEO]")
+            st.markdown("### 🎥")
             st.caption("Re-auth needed")
 
     with col2:
@@ -366,7 +366,7 @@ def render_dashboard_tab(channel: dict):
     st.divider()
 
     # Quick Stats
-    st.markdown("### [TRENDING] Quick Stats")
+    st.markdown("### 📈 Quick Stats")
     col1, col2, col3, col4 = st.columns(4)
 
     stats = get_channel_stats_cached(channel['id'])
@@ -425,7 +425,7 @@ def render_dashboard_tab(channel: dict):
                 best_trend = get_best_pending_trend(channel.get('theme', 'General content'))
 
                 if best_trend:
-                    st.success(f"[TARGET] **Next Trend:** {best_trend['topic']}")
+                    st.success(f"🎯 **Next Trend:** {best_trend['topic']}")
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         st.caption(f"Urgency: {best_trend.get('urgency', 'N/A').title()}")
@@ -437,7 +437,7 @@ def render_dashboard_tab(channel: dict):
                 st.info("[WAIT] No trending topics available yet. Trends are fetched automatically every few hours.")
                 st.caption("[IDEA] The system will automatically generate trending videos when topics become available.")
         except Exception as e:
-            st.warning(f"[WARNING] Trending system not initialized. Run trend_tracker.py first.")
+            st.warning(f"⚠️ Trending system not initialized. Run trend_tracker.py first.")
 
         st.divider()
 
@@ -447,7 +447,7 @@ def render_dashboard_tab(channel: dict):
     st.divider()
 
     # Recent Videos
-    st.markdown("### [CAMERA] Recent Videos")
+    st.markdown("### 📹 Recent Videos")
 
     recent_videos = get_channel_videos_cached(channel['id'], limit=10)
 
@@ -482,13 +482,13 @@ def render_dashboard_tab(channel: dict):
                 # Status badge
                 status = video.get('status', 'unknown')
                 if status == 'posted':
-                    st.success(f"[OK] {status.upper()}")
+                    st.success(f"✅ {status.upper()}")
                 elif status == 'pending':
                     st.info(f"[WAIT] {status.upper()}")
                 elif status == 'approved':
                     st.warning(f"[GOOD] {status.upper()}")
                 else:
-                    st.error(f"[ERROR] {status.upper()}")
+                    st.error(f"❌ {status.upper()}")
 
                 st.divider()
 
@@ -517,7 +517,7 @@ def render_dashboard_tab(channel: dict):
 
 def home_page():
     """Home page - channel overview"""
-    st.title("[VIDEO] Osho Content Studio")
+    st.title("🎥 Osho Content Studio")
     st.markdown("### Multi-Channel Viral Content Engine")
 
     # Daemon status
@@ -525,9 +525,9 @@ def home_page():
 
     with col1:
         if is_daemon_running():
-            st.success("[OK] Automation Engine RUNNING")
+            st.success("✅ Automation Engine RUNNING")
         else:
-            st.error("[WARNING] Automation Engine STOPPED")
+            st.error("⚠️ Automation Engine STOPPED")
 
     with col2:
         if st.button("[LAUNCH] Start Engine"):
@@ -627,14 +627,14 @@ def channel_page(channel_id: int):
                     st.image(yt_info['profile_picture'], width=100)
                 else:
                     # Fallback icon if no thumbnail
-                    st.markdown("### [VIDEO]")
+                    st.markdown("### 🎥")
             else:
                 # Not authenticated - show default icon
-                st.markdown("### [VIDEO]")
+                st.markdown("### 🎥")
         except Exception as e:
             # Error getting profile - show default
-            st.markdown("### [VIDEO]")
-            st.caption("[WARNING] Auth needed")
+            st.markdown("### 🎥")
+            st.caption("⚠️ Auth needed")
 
     with header_col2:
         st.title(channel['name'])
@@ -667,7 +667,7 @@ def channel_page(channel_id: int):
 
     with col3:
         if is_channel_authenticated(channel['name']):
-            st.success("[OK] Authenticated")
+            st.success("✅ Authenticated")
         else:
             st.error("[FAIL] Not Authenticated")
             st.caption(" See Settings tab")
@@ -754,7 +754,7 @@ def render_settings_tab(channel: dict):
     st.markdown("### Channel Settings")
 
     # UI Theme Customization (above channel settings)
-    st.markdown("### [DESIGN] UI Theme Customization")
+    st.markdown("### 🎨 UI Theme Customization")
 
     theme_col1, theme_col2, theme_col3 = st.columns(3)
 
@@ -882,7 +882,7 @@ def render_settings_tab(channel: dict):
                     trend_stats = get_trend_stats()
                     pending = trend_stats.get('pending_generation', 0)
                     if pending > 0:
-                        st.success(f"[OK] {pending} trending topics ready for video generation!")
+                        st.success(f"✅ {pending} trending topics ready for video generation!")
                     else:
                         st.warning("[WAIT] No trending topics available yet. Trends are fetched automatically.")
                 except:
@@ -928,7 +928,7 @@ def render_settings_tab(channel: dict):
     channel_name = channel['name']
 
     if is_channel_authenticated(channel_name):
-        st.success(f"[OK] Channel '{channel_name}' is authenticated!")
+        st.success(f"✅ Channel '{channel_name}' is authenticated!")
 
         # Show channel info
         with st.spinner("Loading channel info..."):
@@ -949,7 +949,7 @@ def render_settings_tab(channel: dict):
             st.success("Authentication revoked")
             st.rerun()
     else:
-        st.warning("[WARNING] Not authenticated with YouTube")
+        st.warning("⚠️ Not authenticated with YouTube")
         st.info("Click below to authenticate. This will open your browser for Google login.")
 
         if st.button(" Authenticate with YouTube", type="primary"):
@@ -1006,9 +1006,9 @@ def render_status_tab(channel: dict):
 
         if next_vid:
             if next_vid['status'] == 'generating':
-                st.info("[VIDEO] Currently generating video...")
+                st.info("🎥 Currently generating video...")
             elif next_vid['status'] == 'ready':
-                st.success(f"[OK] Next video ready: '{next_vid['title']}'")
+                st.success(f"✅ Next video ready: '{next_vid['title']}'")
                 if next_vid['scheduled_post_time']:
                     post_time = parse_time_to_chicago(next_vid['scheduled_post_time'])
                     st.caption(f"Scheduled to post at: {format_time_chicago(post_time, 'time_only')}")
@@ -1054,7 +1054,7 @@ def render_videos_tab(channel: dict):
             time_until_str = format_time_until(scheduled, short=False)
             scheduled_time_str = format_time_chicago(scheduled, 'time_only')
 
-            status_icon = '[VIDEO]' if vid['status'] == 'generating' else '[OK]'
+            status_icon = '🎥' if vid['status'] == 'generating' else '✅'
             st.info(f"{status_icon} **{vid['title'][:60]}...** - Posts {time_until_str} ({scheduled_time_str})")
     else:
         if channel['is_active']:
@@ -1063,7 +1063,7 @@ def render_videos_tab(channel: dict):
             st.warning("Channel is paused - activate it to start generating videos")
 
     st.divider()
-    st.markdown("### [CAMERA] Posted Videos")
+    st.markdown("### 📹 Posted Videos")
 
     # Get posted videos
     posted = [v for v in videos if v['status'] == 'posted']
@@ -1168,13 +1168,13 @@ def render_ai_insights_tab(channel: dict):
         else:
             st.metric("AI Confidence", "N/A")
 
-    st.info("[REFRESH] System runs every 6 hours automatically in the background")
+    st.info("🔄 System runs every 6 hours automatically in the background")
 
     st.divider()
 
     # Performance Overview
     if stats['total'] and stats['total'] > 0:
-        st.markdown("#### [CHART] Channel Performance")
+        st.markdown("#### 📊 Channel Performance")
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
@@ -1191,12 +1191,12 @@ def render_ai_insights_tab(channel: dict):
 
     # Current Strategy
     if strategy:
-        st.markdown("#### [TARGET] Current AI Strategy")
+        st.markdown("#### 🎯 Current AI Strategy")
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**[OK] Recommended Topics**")
+            st.markdown("**✅ Recommended Topics**")
             topics = strategy.get('recommended_topics', [])
             if topics:
                 st.success("AI predicts these will perform well:")
@@ -1206,7 +1206,7 @@ def render_ai_insights_tab(channel: dict):
                 st.info("Collecting data...")
 
         with col2:
-            st.markdown("**[WARNING] Avoid These Topics**")
+            st.markdown("**⚠️ Avoid These Topics**")
             avoid = strategy.get('avoid_topics', [])
             if avoid:
                 st.warning("These underperformed:")
@@ -1219,7 +1219,7 @@ def render_ai_insights_tab(channel: dict):
 
         # Content insights
         if strategy.get('content_style'):
-            st.markdown("**[DESIGN] Optimal Style**")
+            st.markdown("**🎨 Optimal Style**")
             st.info(strategy['content_style'])
 
         if strategy.get('hook_templates'):
@@ -1230,11 +1230,11 @@ def render_ai_insights_tab(channel: dict):
 
         st.divider()
     else:
-        st.info("[CHART] Need at least 3 posted videos for AI analysis")
+        st.info("📊 Need at least 3 posted videos for AI analysis")
 
     # Learning History
     if strategy_history and len(strategy_history) > 1:
-        st.markdown("#### [TRENDING] Learning Evolution")
+        st.markdown("#### 📈 Learning Evolution")
         st.markdown("Track how AI recommendations changed over time:")
 
         for i, strat in enumerate(strategy_history[:5]):
@@ -1271,31 +1271,31 @@ def render_ai_insights_tab(channel: dict):
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("**[STAR] Top Performers**")
+            st.markdown("**⭐ Top Performers**")
             for vid in videos_by_views[:5]:
                 views = vid['views'] if vid['views'] else 0
                 likes = vid['likes'] if vid['likes'] else 0
                 st.markdown(f"**{vid['title'][:40]}...**")
-                st.caption(f" {views:,} views • [GOOD] {likes:,} likes")
+                st.caption(f"👁️ {views:,} views • 👍 {likes:,} likes")
                 st.divider()
 
         with col2:
-            st.markdown("**[DOWN] Learning Opportunities**")
+            st.markdown("**📉 Learning Opportunities**")
             for vid in reversed(videos_by_views[-5:]):
                 views = vid['views'] if vid['views'] else 0
                 likes = vid['likes'] if vid['likes'] else 0
                 st.markdown(f"**{vid['title'][:40]}...**")
-                st.caption(f" {views:,} views • [GOOD] {likes:,} likes")
+                st.caption(f"👁️ {views:,} views • 👍 {likes:,} likes")
                 st.divider()
 
         st.divider()
 
     # How it works
-    st.markdown("#### [REFRESH] How Autonomous Learning Works")
+    st.markdown("#### 🔄 How Autonomous Learning Works")
     st.markdown("""
     **The system improves your content automatically:**
 
-    1. **[CHART] Data Collection (Every 6 hours)**
+    1. **📊 Data Collection (Every 6 hours)**
        - Fetches latest views, likes, comments from YouTube
        - Updates video performance database
 
@@ -1304,12 +1304,12 @@ def render_ai_insights_tab(channel: dict):
        - Identifies what topics, titles, and styles work best
        - Finds patterns in high-performing content
 
-    3. **[TRENDING] Strategy Generation**
+    3. **📈 Strategy Generation**
        - Creates data-driven content recommendations
        - Generates winning topic suggestions
        - Identifies what to avoid
 
-    4. **[VIDEO] Automatic Application**
+    4. **🎥 Automatic Application**
        - Next video generation uses AI insights
        - No manual intervention needed
        - Continuous improvement over time
@@ -1324,7 +1324,7 @@ def render_ai_insights_tab(channel: dict):
 
 def render_analytics_tab(channel: dict):
     """System Analytics and Performance Tracking tab"""
-    st.markdown("### [TRENDING] System Analytics & Performance")
+    st.markdown("### 📈 System Analytics & Performance")
 
     tracker = PerformanceTracker()
 
@@ -1343,10 +1343,10 @@ def render_analytics_tab(channel: dict):
 
         if status == 'healthy':
             color = '#00ff00'
-            emoji = '[OK]'
+            emoji = '✅'
         elif status == 'degraded':
             color = '#ffaa00'
-            emoji = '[WARNING]'
+            emoji = '⚠️'
         else:
             color = '#ff0000'
             emoji = ''
@@ -1370,7 +1370,7 @@ def render_analytics_tab(channel: dict):
     st.divider()
 
     # Current Performance Metrics
-    st.markdown("#### [CHART] Current Performance")
+    st.markdown("#### 📊 Current Performance")
 
     col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -1389,7 +1389,7 @@ def render_analytics_tab(channel: dict):
 
     # Performance Comparison
     if report['comparisons']:
-        st.markdown("#### [TRENDING] Performance Trends (Last 24h vs 1 Week Ago)")
+        st.markdown("#### 📈 Performance Trends (Last 24h vs 1 Week Ago)")
 
         for comparison in report['comparisons']:
             col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
@@ -1422,7 +1422,7 @@ def render_analytics_tab(channel: dict):
             if rec['priority'] == 'critical':
                 st.error(f"** CRITICAL:** {rec['issue']}")
             elif rec['priority'] == 'high':
-                st.warning(f"**[WARNING] HIGH:** {rec['issue']}")
+                st.warning(f"**⚠️ HIGH:** {rec['issue']}")
             else:
                 st.info(f"**ℹ MEDIUM:** {rec['issue']}")
 
@@ -1464,7 +1464,7 @@ def render_analytics_tab(channel: dict):
         st.divider()
 
     # Failure Analysis
-    st.markdown("#### [WARNING] Failure Breakdown")
+    st.markdown("#### ⚠️ Failure Breakdown")
 
     col1, col2 = st.columns(2)
 
@@ -1489,30 +1489,30 @@ def render_analytics_tab(channel: dict):
         if st.button(" Capture Snapshot", use_container_width=True):
             with st.spinner("Capturing performance snapshot..."):
                 snapshot = tracker.capture_snapshot(metadata={'manual': True, 'channel_id': channel['id']})
-                st.success(f"[OK] Snapshot captured at {snapshot.timestamp}")
+                st.success(f"✅ Snapshot captured at {snapshot.timestamp}")
                 st.rerun()
 
     with col2:
-        if st.button("[REFRESH] Refresh Report", use_container_width=True):
+        if st.button("🔄 Refresh Report", use_container_width=True):
             st.rerun()
 
     with col3:
-        if st.button("[CHART] Export Data", use_container_width=True):
+        if st.button("📊 Export Data", use_container_width=True):
             st.info("Export feature coming soon!")
 
     st.divider()
 
     # Expected Improvements
-    st.markdown("#### [TARGET] Expected System Improvements")
+    st.markdown("#### 🎯 Expected System Improvements")
 
     st.markdown("""
     **With all improvements deployed, we expect:**
 
-    - [OK] **Success Rate:** 10.9% → 70-80% (+650% improvement)
-    - [OK] **Avg Views:** 5.7 → 200-300 views (+3,400% improvement)
-    - [OK] **Auth Failures:** 361 → 0 (100% reduction)
-    - [OK] **Title Quality:** 0/100 → 70+/100
-    - [OK] **Disk Usage:** 3,973 MB → 1,600 MB (2.3 GB freed)
+    - ✅ **Success Rate:** 10.9% → 70-80% (+650% improvement)
+    - ✅ **Avg Views:** 5.7 → 200-300 views (+3,400% improvement)
+    - ✅ **Auth Failures:** 361 → 0 (100% reduction)
+    - ✅ **Title Quality:** 0/100 → 70+/100
+    - ✅ **Disk Usage:** 3,973 MB → 1,600 MB (2.3 GB freed)
 
     **Timeline:**
     - Week 1: Success rate improves to 50-60%
