@@ -42,6 +42,47 @@ from time_formatter import (
 )
 from performance_tracker import PerformanceTracker
 import json
+import sqlite3
+
+# ==============================================================================
+# Cached Data Functions (Performance Optimization)
+# ==============================================================================
+
+@st.cache_data(ttl=30)
+def get_youtube_channel_info_cached(channel_name: str):
+    """Cached version of get_youtube_channel_info - 30 second TTL"""
+    return get_youtube_channel_info(channel_name)
+
+@st.cache_data(ttl=10)
+def get_channel_videos_cached(channel_id: int, limit: int = 100):
+    """Cached version of get_channel_videos - 10 second TTL"""
+    return get_channel_videos(channel_id, limit)
+
+@st.cache_data(ttl=10)
+def get_channel_stats_cached(channel_id: int):
+    """Cached version of get_channel_stats - 10 second TTL"""
+    return get_channel_stats(channel_id)
+
+@st.cache_data(ttl=10)
+def get_video_stats_aggregated(channel_id: int):
+    """Get aggregated video stats efficiently using SQL - 10 second TTL"""
+    conn = sqlite3.connect('channels.db')
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT
+            COALESCE(SUM(views), 0) as total_views,
+            COALESCE(SUM(likes), 0) as total_likes,
+            COUNT(*) as video_count
+        FROM videos
+        WHERE channel_id = ? AND status = 'posted'
+    """, (channel_id,))
+    result = cursor.fetchone()
+    conn.close()
+    return {
+        'total_views': result[0],
+        'total_likes': result[1],
+        'posted_count': result[2]
+    }
 
 # ==============================================================================
 # Page Config
@@ -233,7 +274,7 @@ def render_channel_card(channel: dict):
             # Show profile picture
             try:
                 if is_channel_authenticated(channel['name']):
-                    yt_info = get_youtube_channel_info(channel['name'])
+                    yt_info = get_youtube_channel_info_cached(channel['name'])
                     if yt_info and yt_info.get('profile_picture'):
                         st.image(yt_info['profile_picture'], width=60)
                     else:
@@ -263,7 +304,7 @@ def render_channel_card(channel: dict):
                 st.rerun()
 
         # Recent video
-        videos = get_channel_videos(channel['id'], limit=1)
+        videos = get_channel_videos_cached(channel['id'], limit=1)
         if videos:
             vid = videos[0]
             if vid['youtube_url']:
@@ -301,9 +342,8 @@ def render_dashboard_tab(channel: dict):
     with col1:
         # Try to fetch channel profile picture from YouTube
         try:
-            from auth_manager import get_youtube_channel_info
             if is_channel_authenticated(channel['name']):
-                channel_info = get_youtube_channel_info(channel['name'])
+                channel_info = get_youtube_channel_info_cached(channel['name'])
                 if channel_info and channel_info.get('profile_picture'):
                     st.image(channel_info['profile_picture'], width=150)
                 else:
@@ -329,7 +369,7 @@ def render_dashboard_tab(channel: dict):
     st.markdown("### [TRENDING] Quick Stats")
     col1, col2, col3, col4 = st.columns(4)
 
-    stats = get_channel_stats(channel['id'])
+    stats = get_channel_stats_cached(channel['id'])
     pending_videos = stats['total_videos'] - stats['posted_videos'] - stats['failed_videos']
 
     with col1:
@@ -341,10 +381,10 @@ def render_dashboard_tab(channel: dict):
     with col4:
         st.metric("Failed", stats['failed_videos'])
 
-    # Get total views and likes from videos
-    videos_with_stats = get_channel_videos(channel['id'], limit=100)
-    total_views = sum(v.get('views', 0) for v in videos_with_stats)
-    total_likes = sum(v.get('likes', 0) for v in videos_with_stats)
+    # Get total views and likes efficiently using aggregated query
+    aggregated_stats = get_video_stats_aggregated(channel['id'])
+    total_views = aggregated_stats['total_views']
+    total_likes = aggregated_stats['total_likes']
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -409,7 +449,7 @@ def render_dashboard_tab(channel: dict):
     # Recent Videos
     st.markdown("### [CAMERA] Recent Videos")
 
-    recent_videos = get_channel_videos(channel['id'], limit=10)
+    recent_videos = get_channel_videos_cached(channel['id'], limit=10)
 
     if not recent_videos:
         st.info("No videos yet. Create your first video to get started!")
@@ -582,7 +622,7 @@ def channel_page(channel_id: int):
         # Try to get YouTube channel profile picture
         try:
             if is_channel_authenticated(channel['name']):
-                yt_info = get_youtube_channel_info(channel['name'])
+                yt_info = get_youtube_channel_info_cached(channel['name'])
                 if yt_info and yt_info.get('profile_picture'):
                     st.image(yt_info['profile_picture'], width=100)
                 else:
@@ -601,7 +641,7 @@ def channel_page(channel_id: int):
         # Show channel handle if available
         try:
             if is_channel_authenticated(channel['name']):
-                yt_info = get_youtube_channel_info(channel['name'])
+                yt_info = get_youtube_channel_info_cached(channel['name'])
                 if yt_info and 'title' in yt_info:
                     st.caption(f"@{yt_info.get('custom_url', yt_info['title'])}")
         except:
@@ -622,7 +662,7 @@ def channel_page(channel_id: int):
             st.warning(" PAUSED")
 
     with col2:
-        stats = get_channel_stats(channel_id)
+        stats = get_channel_stats_cached(channel_id)
         st.metric("Posted", stats['posted_videos'])
 
     with col3:
@@ -660,32 +700,38 @@ def channel_page(channel_id: int):
     if 'active_tab' not in st.session_state:
         st.session_state.active_tab = "Dashboard"
 
-    # Tab buttons
+    # Tab buttons - optimized to avoid unnecessary reruns
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
-        if st.button("[CHART] Dashboard", use_container_width=True, type="primary" if st.session_state.active_tab == "Dashboard" else "secondary"):
-            st.session_state.active_tab = "Dashboard"
-            st.rerun()
+        if st.button("📊 Dashboard", use_container_width=True, type="primary" if st.session_state.active_tab == "Dashboard" else "secondary"):
+            if st.session_state.active_tab != "Dashboard":
+                st.session_state.active_tab = "Dashboard"
+                st.rerun()
     with col2:
-        if st.button("[SETTINGS] Settings", use_container_width=True, type="primary" if st.session_state.active_tab == "Settings" else "secondary"):
-            st.session_state.active_tab = "Settings"
-            st.rerun()
+        if st.button("⚙️ Settings", use_container_width=True, type="primary" if st.session_state.active_tab == "Settings" else "secondary"):
+            if st.session_state.active_tab != "Settings":
+                st.session_state.active_tab = "Settings"
+                st.rerun()
     with col3:
-        if st.button(" AI Insights", use_container_width=True, type="primary" if st.session_state.active_tab == "AI" else "secondary"):
-            st.session_state.active_tab = "AI"
-            st.rerun()
+        if st.button("🧠 AI Insights", use_container_width=True, type="primary" if st.session_state.active_tab == "AI" else "secondary"):
+            if st.session_state.active_tab != "AI":
+                st.session_state.active_tab = "AI"
+                st.rerun()
     with col4:
-        if st.button("[TRENDING] Analytics", use_container_width=True, type="primary" if st.session_state.active_tab == "Analytics" else "secondary"):
-            st.session_state.active_tab = "Analytics"
-            st.rerun()
+        if st.button("📈 Analytics", use_container_width=True, type="primary" if st.session_state.active_tab == "Analytics" else "secondary"):
+            if st.session_state.active_tab != "Analytics":
+                st.session_state.active_tab = "Analytics"
+                st.rerun()
     with col5:
-        if st.button("[NOTE] Status & Logs", use_container_width=True, type="primary" if st.session_state.active_tab == "Status" else "secondary"):
-            st.session_state.active_tab = "Status"
-            st.rerun()
+        if st.button("📝 Status & Logs", use_container_width=True, type="primary" if st.session_state.active_tab == "Status" else "secondary"):
+            if st.session_state.active_tab != "Status":
+                st.session_state.active_tab = "Status"
+                st.rerun()
     with col6:
-        if st.button("[CAMERA] Videos", use_container_width=True, type="primary" if st.session_state.active_tab == "Videos" else "secondary"):
-            st.session_state.active_tab = "Videos"
-            st.rerun()
+        if st.button("🎥 Videos", use_container_width=True, type="primary" if st.session_state.active_tab == "Videos" else "secondary"):
+            if st.session_state.active_tab != "Videos":
+                st.session_state.active_tab = "Videos"
+                st.rerun()
 
     st.divider()
 
@@ -886,7 +932,7 @@ def render_settings_tab(channel: dict):
 
         # Show channel info
         with st.spinner("Loading channel info..."):
-            info = get_youtube_channel_info(channel_name)
+            info = get_youtube_channel_info_cached(channel_name)
 
             if info:
                 st.markdown(f"**YouTube Channel:** {info['title']}")
@@ -985,21 +1031,20 @@ def render_status_tab(channel: dict):
         for log in logs[:20]:  # Show first 20 logs (newest)
             render_log_entry(log)
 
-    # Auto-refresh
-    if st.button("[REFRESH] Refresh Logs"):
+    # Auto-refresh button
+    if st.button("🔄 Refresh Logs", use_container_width=True):
+        st.cache_data.clear()
         st.rerun()
 
-    # Auto-refresh every 5 seconds if active
-    if channel['is_active']:
-        time.sleep(5)
-        st.rerun()
+    # Note: Removed blocking sleep(5) for better UI responsiveness
+    # Users can manually refresh using the button above
 
 def render_videos_tab(channel: dict):
     """Videos history tab"""
     st.markdown("###  Upcoming Videos")
 
     # Get upcoming/ready videos
-    videos = get_channel_videos(channel['id'], limit=100)
+    videos = get_channel_videos_cached(channel['id'], limit=100)
     upcoming = [v for v in videos if v['status'] in ['ready', 'generating'] and v.get('scheduled_post_time')]
 
     if upcoming:
