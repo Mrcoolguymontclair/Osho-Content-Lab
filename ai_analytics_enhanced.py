@@ -25,8 +25,11 @@ import toml
 from channel_manager import get_channel_videos, get_channel, add_log
 
 # Initialize Groq
-secrets = toml.load('.streamlit/secrets.toml')
-groq_client = Groq(api_key=secrets.get('GROQ_API_KEY')) if secrets.get('GROQ_API_KEY') else None
+try:
+    secrets = toml.load('.streamlit/secrets.toml')
+    groq_client = Groq(api_key=secrets.get('GROQ_API_KEY')) if secrets.get('GROQ_API_KEY') else None
+except FileNotFoundError:
+    groq_client = None
 
 
 # ==============================================================================
@@ -119,7 +122,7 @@ RULES:
 - Check if it avoids failed patterns
 - Be strict: only generate videos with >40% predicted success"""
 
-        response = groq_client.chat_completions_create(
+        response = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,  # Low temp for consistent predictions
@@ -135,7 +138,7 @@ RULES:
         prediction = json.loads(content.strip())
 
         # Log prediction
-        verdict = "[OK] APPROVED" if prediction['should_generate'] else "[ERROR] BLOCKED"
+        verdict = "✅ APPROVED" if prediction['should_generate'] else "❌ BLOCKED"
         add_log(channel_id, "info", "prediction",
                f"{verdict} '{title}' - Score: {prediction['predicted_score']}/100")
 
@@ -407,7 +410,7 @@ def generate_trajectory_recommendations(trajectory: str, growth_rate: float) -> 
 # MAIN CONTROL FUNCTIONS
 # ==============================================================================
 
-def should_generate_video(title: str, topic: str, channel_id: int) -> Tuple[bool, Dict]:
+def should_generate_video(title: str, topic: str, channel_id: int, ai_power_level: int = 50) -> Tuple[bool, Dict]:
     """
     MASTER FUNCTION: Decide if a video should be generated.
 
@@ -417,26 +420,36 @@ def should_generate_video(title: str, topic: str, channel_id: int) -> Tuple[bool
         title: Proposed title
         topic: Proposed topic
         channel_id: Channel ID
+        ai_power_level: 0-100, how much power AI has (60+ enables blocking)
 
     Returns: (should_generate, full_analysis)
     """
     prediction = predict_video_performance(title, topic, channel_id)
 
-    # HARD BLOCK if predicted score too low
-    if prediction['predicted_score'] < 40:
+    # Only block videos if AI power level is high enough (60+)
+    if ai_power_level >= 60 and prediction['predicted_score'] < 40:
         add_log(channel_id, "warning", "blocked",
-               f"VIDEO BLOCKED: '{title}' - Score {prediction['predicted_score']}/100")
+               f"VIDEO BLOCKED by AI: '{title}' - Score {prediction['predicted_score']}/100")
         return False, prediction
 
-    # Allow if score >= 40
+    # Log approval if AI power is active
+    if ai_power_level >= 35:
+        add_log(channel_id, "info", "prediction",
+               f"✅ APPROVED: '{title}' - Score {prediction['predicted_score']}/100")
+
+    # Allow if score >= 40 OR AI power too low to block
     return True, prediction
 
 
-def get_video_generation_config(channel_id: int) -> Dict:
+def get_video_generation_config(channel_id: int, ai_power_level: int = 50) -> Dict:
     """
     Get current AI-driven configuration for video generation.
 
     This is called BEFORE each video generation to get latest AI decisions.
+
+    Args:
+        channel_id: Channel ID
+        ai_power_level: 0-100, controls AI autonomy
 
     Returns:
         {
@@ -445,28 +458,40 @@ def get_video_generation_config(channel_id: int) -> Dict:
             'confidence': 0-100,
             'recommended_topics': [str],
             'avoid_topics': [str],
-            'special_instructions': str
+            'special_instructions': str,
+            'ai_enabled': bool
         }
     """
-    # Get real-time strategy adaptation
-    adaptation = adapt_strategy_realtime(channel_id)
+    # Get real-time strategy adaptation (only if AI power >= 50)
+    if ai_power_level >= 50:
+        adaptation = adapt_strategy_realtime(channel_id)
+    else:
+        adaptation = {'use_strategy': False, 'confidence': 0}
 
-    # Get A/B test allocation
-    ab_group = get_optimal_ab_split(channel_id)
+    # Get A/B test allocation (only if AI power >= 35)
+    if ai_power_level >= 35:
+        ab_group = get_optimal_ab_split(channel_id)
+    else:
+        ab_group = 'control'
 
-    # Get latest content strategy
-    from ai_analyzer import get_latest_content_strategy
-    strategy = get_latest_content_strategy(channel_id)
+    # Get latest content strategy (only if AI power >= 20)
+    if ai_power_level >= 20:
+        from ai_analyzer import get_latest_content_strategy
+        strategy = get_latest_content_strategy(channel_id)
+    else:
+        strategy = None
 
     return {
-        'use_ai_strategy': adaptation['use_strategy'] and (ab_group == 'strategy'),
+        'use_ai_strategy': adaptation['use_strategy'] and (ab_group == 'strategy') and (ai_power_level >= 50),
         'ab_test_group': ab_group,
         'confidence': adaptation['confidence'],
         'recommended_topics': strategy.get('recommended_topics', []) if strategy else [],
         'avoid_topics': strategy.get('avoid_topics', []) if strategy else [],
         'special_instructions': strategy.get('content_style', '') if strategy else '',
         'strategy_working': adaptation.get('strategy_working'),
-        'immediate_actions': adaptation.get('immediate_actions', [])
+        'immediate_actions': adaptation.get('immediate_actions', []),
+        'ai_enabled': ai_power_level >= 20,
+        'ai_power_level': ai_power_level
     }
 
 
@@ -491,7 +516,7 @@ if __name__ == "__main__":
         prediction = predict_video_performance(title, topic, channel_id)
         print(f"\nTitle: {title}")
         print(f"  Score: {prediction['predicted_score']}/100")
-        print(f"  Should Generate: {'[OK] YES' if prediction['should_generate'] else '[ERROR] NO'}")
+        print(f"  Should Generate: {'✅ YES' if prediction['should_generate'] else '❌ NO'}")
         print(f"  Risk: {prediction.get('risk_level', 'unknown')}")
 
     # Test 2: Real-time strategy adaptation
@@ -510,4 +535,4 @@ if __name__ == "__main__":
     config = get_video_generation_config(channel_id)
     print(json.dumps(config, indent=2))
 
-    print("\n[OK] All tests complete!")
+    print("\n✅ All tests complete!")

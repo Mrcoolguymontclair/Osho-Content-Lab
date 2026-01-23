@@ -1,0 +1,9 @@
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+enableCORS = false
+
+[client]
+toolbarMode = "minimal"

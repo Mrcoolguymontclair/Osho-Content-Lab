@@ -43,7 +43,7 @@ from realtime_monitor import (
 )
 
 
-class AISuper Brain:
+class AISuperBrain:
     """
     Unified AI system that orchestrates all intelligence capabilities.
     """
@@ -417,7 +417,7 @@ def get_ai_brain() -> AISuperBrain:
     """Get global AI Super Brain instance."""
     global _ai_brain
     if _ai_brain is None:
-        _ai_brain = AISuper Brain()
+        _ai_brain = AISuperBrain()
     return _ai_brain
 
 

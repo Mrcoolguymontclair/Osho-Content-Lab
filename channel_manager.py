@@ -193,6 +193,12 @@ def migrate_database_for_analytics():
             migrations_applied.append("video_type")
             conn.commit()
 
+        # Add ai_power_level column to channels (0-100, controls AI autonomy)
+        if 'ai_power_level' not in channel_columns:
+            cursor.execute("ALTER TABLE channels ADD COLUMN ai_power_level INTEGER DEFAULT 50")
+            migrations_applied.append("ai_power_level")
+            conn.commit()
+
         # Create trends table for Google Trends integration
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS trends (
@@ -330,7 +336,7 @@ def get_active_channels() -> List[Dict]:
 
 def update_channel(channel_id: int, **kwargs) -> bool:
     """Update channel fields"""
-    allowed_fields = ['name', 'theme', 'tone', 'style', 'other_info', 'post_interval_minutes', 'music_volume', 'is_active', 'token_file', 'last_post_at', 'next_post_at', 'video_type', 'ranking_count']
+    allowed_fields = ['name', 'theme', 'tone', 'style', 'other_info', 'post_interval_minutes', 'music_volume', 'is_active', 'token_file', 'last_post_at', 'next_post_at', 'video_type', 'ranking_count', 'ai_power_level']
 
     updates = []
     values = []
